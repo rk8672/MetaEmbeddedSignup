@@ -1,0 +1,172 @@
+/* Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Animated Gradient Background */
+.animated-gradient {
+background: linear-gradient(-45deg, #FFFFFF, #F0F9FF, #E6F7FF, #D9F2FF); /* Soft blues and greens */
+  background-size: 400% 400%;
+  animation: gradientBG 20s ease infinite;
+}
+
+/* Keyframes for animated gradient */
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Rotating image */
+@keyframes slow-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.rotate-slow {
+  animation: slow-rotate 20s linear infinite;
+}
+
+/* Entry Animations */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 1s ease-out forwards;
+}
+.animate-slide-in-right {
+  animation: slideInRight 1s ease-out forwards;
+}
+.animate-fade-in {
+  animation: fadeIn 1.2s ease-in;
+}
+.fade-in-delay {
+  animation: fadeIn 1.8s ease-in;
+}
+.fade-in-delay-slow {
+  animation: fadeIn 2.2s ease-in;
+}
+
+/* Button hover */
+.animated-btn {
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+.animated-btn:hover {
+  transform: scale(1.05);
+}
+
+/* Glowing Text */
+.glowing-text {
+  animation: glow 2.5s ease-in-out infinite alternate;
+}
+@keyframes glow {
+  from {
+    text-shadow: 0 0 5px #60a5fa, 0 0 10px #60a5fa;
+  }
+  to {
+    text-shadow: 0 0 15px #3b82f6, 0 0 30px #3b82f6;
+  }
+}
+/* Base styles */
+.step-container {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.step-icon {
+  background-color: white;
+  padding: 16px;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border: 2px solid #e0e0e0;
+  z-index: 1;
+}
+
+.step-content {
+  background-color: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border: 2px solid #e0e0e0;
+  width: 100%;
+}
+
+.step-container .step-icon {
+  animation: iconFadeIn 0.6s ease-in-out;
+}
+
+.step-container .step-content {
+  animation: contentSlideIn 0.6s ease-in-out;
+}
+
+.step-container:nth-child(odd) .step-content {
+  animation-delay: 0.1s;
+}
+
+.step-container:nth-child(even) .step-content {
+  animation-delay: 0.2s;
+}
+
+/* Connecting line */
+.line {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 4px;
+  border-left: 4px dotted #1e3a8a;
+  z-index: 0;
+  height: 100%;
+  animation: drawLine 1s ease-in-out forwards;
+}
+
+/* Keyframe Animations */
+@keyframes iconFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes contentSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawLine {
+  0% {
+    height: 0;
+  }
+  100% {
+    height: 100%;
+  }
+}
