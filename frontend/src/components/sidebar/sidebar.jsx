@@ -40,9 +40,9 @@ const Sidebar = ({ closeSidebar }) => {
       <div className="px-4 py-5 flex items-center justify-between border-b gap-2 border-gray-100">
         {!collapsed ? (
           <div className="flex flex-col text-[#1d2786] font-bold leading-tight">
-            {/* <span className="text-3xl">
-              medli<span className="text-red-500">tech</span>
-            </span> */}
+            <span className="text-3xl">
+              CALC<span className="text-red-500">360</span>
+            </span>
             <span className="text-xs font-medium text-gray-500 tracking-wide border-top">
            
               Sunshine Heart Hospital

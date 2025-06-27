@@ -1,4 +1,3 @@
-import Navbar from "./NavBar";
 import heroSectionImg from "../../assets/doctor_image.png"; // Ensure this is the correct female doctor image
 import "./Home.css";
 
@@ -6,7 +5,6 @@ const HeroSection = () => {
   return (
     <section className="animated-gradient min-h-screen text-slate-800">
       <div className="px-6 md:px-12 lg:px-20 pt-10">
-        <Navbar />
 
         <div className="grid lg:grid-cols-2 items-center min-h-[100vh] py-20 gap-16">
           {/* Text Content */}

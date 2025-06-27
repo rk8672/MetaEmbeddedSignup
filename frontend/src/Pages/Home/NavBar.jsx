@@ -1,37 +1,48 @@
 import { useState } from "react";
-import {useNavigate} from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom";
+
 const Navbar = () => {
-  const navigate=useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const menuItems = [
+    { name: "Home", path: "/" },
+    { name: "Services", path: "/" },
+    { name: "Clients", path: "/" },
+    { name: "About Us", path: "/" },
+  ];
 
   return (
     <section className="w-full py-4 px-4 md:px-12 shadow-sm bg-white rounded transition-all duration-500 ease-in-out">
       <div className="flex items-center justify-between animate-fade-in">
         {/* Logo */}
-        <div className="w-30 flex flex-col justify-center items-center font-poppins text-[#1d2786]">
+        <Link to="/" className="w-30 flex flex-col justify-center items-center font-poppins text-[#1d2786]">
           <h1 className="text-3xl font-bold text-center leading-tight">
             medli<span className="text-red-600">tech</span>
           </h1>
-        </div>
+        </Link>
 
         {/* Desktop Menu */}
         <nav className="hidden md:flex gap-8 text-sm font-bold text-gray-800">
-          {["Home", "Services", "Clients", "About Us"].map((item) => (
-            <div
-              key={item}
-              className="cursor-pointer hover:text-[#1d2786] hover:underline underline-offset-4 transition-all duration-300"
+          {menuItems.map((item) => (
+            <Link
+              key={item.name}
+              to={item.path}
+              className="hover:text-[#1d2786] hover:underline underline-offset-4 transition-all duration-300"
             >
-              {item}
-            </div>
+              {item.name}
+            </Link>
           ))}
         </nav>
 
         {/* Login Button */}
         <div className="hidden md:block">
-          <button className="animated-btn bg-indigo-700 text-white font-semibold py-2 px-5 rounded-lg shadow" onClick={()=>{navigate("/Login")}}>
+          <button
+            className="animated-btn bg-indigo-700 text-white font-semibold py-2 px-5 rounded-lg shadow"
+            onClick={() => navigate("/login")}
+          >
             Login
           </button>
-          
         </div>
 
         {/* Hamburger Icon */}
@@ -56,12 +67,23 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden mt-3 space-y-2 text-sm text-gray-800 font-semibold animate-fade-in">
-          {["Home", "Services", "Clients", "About Us"].map((item) => (
-            <div key={item} className="hover:text-[#1d2786] cursor-pointer">
-              {item}
-            </div>
+          {menuItems.map((item) => (
+            <Link
+              key={item.name}
+              to={item.path}
+              onClick={() => setIsOpen(false)}
+              className="block hover:text-[#1d2786]"
+            >
+              {item.name}
+            </Link>
           ))}
-          <button className="mt-2 bg-blue-700 text-white py-2 px-4 rounded-lg shadow transition" onClick={()=>{navigate("/Login")}}>
+          <button
+            className="mt-2 bg-blue-700 text-white py-2 px-4 rounded-lg shadow transition"
+            onClick={() => {
+              setIsOpen(false);
+              navigate("/login");
+            }}
+          >
             Login
           </button>
         </div>
