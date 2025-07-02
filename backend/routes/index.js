@@ -28,4 +28,7 @@ router.use("/",authMiddleware,appointmentRoute);
 const organizationUser=require("./orgUser_Routes.js");
 router.use('/',authMiddleware,organizationUser);
 
+const whatsappRoutes=require('../routes/whatsappRoutes.js');
+router.use("/",authMiddleware,whatsappRoutes);
+
 module.exports = router;
