@@ -1,7 +1,11 @@
 const express = require('express');
+const router = express.Router();
+
 const WhatsAppAccount = require('../models/WhatsAppAccount');
 const MessageLog = require('../models/MessageLog');
-const router = express.Router();
+
+// Middleware to ensure body is parsed (in case not set globally)
+router.use(express.json());
 
 // ✅ Webhook verification route (GET)
 router.get('/', (req, res) => {
@@ -19,9 +23,12 @@ router.get('/', (req, res) => {
   res.status(403).send('Verification failed');
 });
 
-// ✅ Webhook callback handler (POST)
+// ✅ Webhook callback route (POST)
 router.post('/', async (req, res) => {
   try {
+    console.log('📡 Incoming webhook received');
+    console.log(JSON.stringify(req.body, null, 2)); // debug: full payload
+
     const body = req.body;
 
     if (body.object === 'whatsapp_business_account') {
@@ -32,7 +39,7 @@ router.post('/', async (req, res) => {
       const phoneNumberId = value?.metadata?.phone_number_id;
 
       if (!phoneNumberId || !message) {
-        console.warn('⚠️ Missing phoneNumberId or message');
+        console.warn('⚠️ Missing phoneNumberId or message in webhook payload');
         return res.sendStatus(400);
       }
 
@@ -42,8 +49,8 @@ router.post('/', async (req, res) => {
         return res.status(404).send('Account not found');
       }
 
-      // ✅ Save the message to MongoDB
       await MessageLog.create({
+        organizationId: account.organizationId, // ✅ multi-tenant tracking
         whatsappAccountId: account._id,
         direction: 'inbound',
         message: message,
@@ -51,10 +58,11 @@ router.post('/', async (req, res) => {
       });
 
       console.log(`📥 Message logged from ${message.from}: ${message.text?.body}`);
+      console.log('✅ Message received and stored successfully.');
       return res.sendStatus(200);
     }
 
-    res.sendStatus(400);
+    res.sendStatus(400); // not a WhatsApp webhook
   } catch (err) {
     console.error('❌ Webhook error:', err);
     res.sendStatus(500);
