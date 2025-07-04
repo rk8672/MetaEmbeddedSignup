@@ -3,12 +3,12 @@ const router = express.Router();
 
 const WhatsAppAccount = require('../models/WhatsAppAccount');
 const MessageLog = require('../models/MessageLog');
-const sendTextMessage =require('../services/whatsappServices/sendTextMessage');
+const sendTextMessage = require('../services/whatsappServices/sendTextMessage');
 const sendButtonMessage = require('../services/whatsappServices/sendInteractiveButtons');
-// Parse incoming JSON (in case not set globally)
+
 router.use(express.json());
 
-// ✅ GET route for webhook verification (Meta setup only)
+// ✅ Webhook verification for Meta
 router.get('/', (req, res) => {
   const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
   const mode = req.query['hub.mode'];
@@ -24,67 +24,82 @@ router.get('/', (req, res) => {
   return res.sendStatus(403);
 });
 
-// ✅ POST route for incoming messages from Meta
+// ✅ Handle incoming messages & status updates
 router.post('/', async (req, res) => {
   try {
     const body = req.body;
     console.log('📡 Incoming webhook payload:', JSON.stringify(body, null, 2));
 
-    // ✅ Real WhatsApp webhook from Meta
     if (body.object === 'whatsapp_business_account') {
-      const entries = body.entry || [];
-
-      for (const entry of entries) {
+      for (const entry of body.entry || []) {
         for (const change of entry.changes || []) {
           const value = change.value;
-          const message = value?.messages?.[0];
           const phoneNumberId = value?.metadata?.phone_number_id;
 
-          if (!message || !phoneNumberId) {
-            console.warn('⚠️ Missing message or phoneNumberId');
+          if (!phoneNumberId) {
+            console.warn('⚠️ Missing phoneNumberId');
             continue;
           }
 
-          // ✅ Lookup WABA in your DB
-          const account = await WhatsAppAccount.findOne({ phoneNumberId });
-          if (!account) {
-            console.warn(`❌ No WhatsAppAccount found for ${phoneNumberId}`);
+          // ✅ Case: Incoming message from user
+          if (value?.messages?.length > 0) {
+            const message = value.messages[0];
+
+            // Find the WhatsApp account
+            const account = await WhatsAppAccount.findOne({ phoneNumberId });
+            if (!account) {
+              console.warn(`❌ No WhatsAppAccount found for ${phoneNumberId}`);
+              continue;
+            }
+
+            // Save message to DB
+            await MessageLog.create({
+              organizationId: account.organizationId,
+              whatsappAccountId: account._id,
+              direction: 'inbound',
+              message: message,
+              timeStamp: new Date(Number(message.timestamp) * 1000) || new Date()
+            });
+
+            // Log and respond
+            const userText = message.text?.body?.toLowerCase() || '';
+            console.log(`📥 Message received from ${message.from}: ${message.text?.body}`);
+
+            // Text reply
+            await sendTextMessage({
+              phoneNumberId: account.phoneNumberId,
+              accessToken: account.accessToken,
+              to: message.from,
+              text: "Hi, this is an auto-reply from Calc360 👋",
+            });
+
+            // Button message
+            await sendButtonMessage({
+              phoneNumberId: account.phoneNumberId,
+              accessToken: account.accessToken,
+              to: message.from,
+            });
+
             continue;
           }
 
-          // ✅ Store in MessageLog
-          await MessageLog.create({
-            organizationId: account.organizationId,
-            whatsappAccountId: account._id,
-            direction: 'inbound',
-            message: message,
-            timeStamp: new Date(Number(message.timestamp) * 1000) || new Date()
-          });
-          const userText=message.text?.body?.toLowerCase() || '';
-          console.log(`📥 Message received from ${message.from}: ${message.text?.body}`);
+          // ✅ Case: Status update (e.g., message read)
+          if (value?.statuses?.length > 0) {
+            const status = value.statuses[0];
+            console.log(`ℹ️ Status update for message ID ${status.id}: ${status.status}`);
+            // Optional: Save to DB if needed
+            continue;
+          }
 
-          //Send reply to user
-          await sendTextMessage({
-            phoneNumberId:account.phoneNumberId,
-            accessToken:account.accessToken,
-            to:message.from,
-            text:"Hi, this is an auto-reply from Calc360 👋",
-          });
-
-          //Send Button reply to user
-          await sendButtonMessage({
-  phoneNumberId: account.phoneNumberId,
-  accessToken: account.accessToken,
-  to: message.from,
-});
-
+          // Unknown value
+          console.warn('⚠️ Unknown value structure:', JSON.stringify(value, null, 2));
         }
       }
 
       return res.sendStatus(200);
     }
 
-    // ✅ Support Postman/dev panel test messages (simple flat structure)
+    // ✅ Test or dev payload from Postman
     if (req.body?.field === 'messages') {
       console.log('🧪 Test message from Postman or dev panel:', JSON.stringify(req.body, null, 2));
       return res.sendStatus(200);
