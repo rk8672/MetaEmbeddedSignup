@@ -1,48 +1,62 @@
-const MessageLog=require('../models/MessageLog');
+const MessageLog = require('../models/MessageLog');
 
 // GET /api/message
-exports.getMessageLogs=async(req,res)=>{
-    try{
-        const{
-            direction,
-            fromDate,
-            toDate,
-            page=1,
-            limit=20
-        }=req.query;
+exports.getMessageLogs = async (req, res) => {
+  try {
+    const {
+      direction,
+      fromDate,
+      toDate,
+      page = 1,
+      limit = 20
+    } = req.query;
 
-        const organizationId=req.user?.organizationId;
-        if(!organizationId){
-            return res.status(403).json({success:false,error:'Unauthorized : No organization context'});
-        }
-
-        const filter={organizationId};
-        if(direction) filter.direction=direction;
-        if(fromDate||toDate){
-            filter.timeStemp={};
-            if(fromDate) filter.timeStamp.$gte=new Date(fromDate);
-            if(toDate) filter.timeStemp.$lte=new Date(toDate);
-        }
-
-        const message=await MessageLog.find(filter)
-        .sort({timeStemp:-1})
-        .skip((page-1)*limit)
-        .limit(Number(limit))
-        .populate('whatsappAccountId','phoneNumberId');
-
-        const total=await MessageLog.countDocuments(filter);
-
-        res.json({
-            success:true,
-            page:Number(page),
-            limit:Number(limit),
-            total,
-            message
-        });
-
-
-
-    }catch(err){
-        res.status(500).json({success:false,error:'Internal Server Error'});
+    // 🔐 Normally from auth middleware, hardcoded for testing
+    const organizationId = req.user?.organizationId || '6858dd76ea3226c96d2cb67f';
+    
+    if (!organizationId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Unauthorized: No organization context'
+      });
     }
-}
+
+    const filter = { organizationId };
+
+    if (direction) {
+      filter.direction = direction;
+    }
+
+    if (fromDate || toDate) {
+      filter.timeStamp = {};
+      if (fromDate) filter.timeStamp.$gte = new Date(fromDate);
+      if (toDate) filter.timeStamp.$lte = new Date(toDate);
+    }
+
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    const message = await MessageLog.find(filter)
+      .sort({ timeStamp: -1 })
+      .skip((pageNumber - 1) * limitNumber)
+      .limit(limitNumber)
+      .populate('whatsappAccountId', 'phoneNumberId'); // ✅ Works now
+
+    const total = await MessageLog.countDocuments(filter);
+
+    res.json({
+      success: true,
+      page: pageNumber,
+      limit: limitNumber,
+      total,
+      message
+    });
+
+  } catch (err) {
+    console.error('❌ getMessageLogs Error:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Internal Server Error'
+    });
+  }
+};

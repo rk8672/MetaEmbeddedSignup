@@ -3,7 +3,7 @@ const router = express.Router();
 
 const WhatsAppAccount = require('../models/WhatsAppAccount');
 const MessageLog = require('../models/MessageLog');
-
+const sendTextMessage =require('../services/whatsappServices/sendTextMessage')
 // Parse incoming JSON (in case not set globally)
 router.use(express.json());
 
@@ -59,8 +59,17 @@ router.post('/', async (req, res) => {
             message: message,
             timeStamp: new Date(Number(message.timestamp) * 1000) || new Date()
           });
-
+          const userText=message.text?.body?.toLowerCase() || '';
           console.log(`📥 Message received from ${message.from}: ${message.text?.body}`);
+
+          //Send reply to user
+          await sendTextMessage({
+            phoneNumberId:account.phoneNumberId,
+            accessToken:account.accessToken,
+            to:message.from,
+            message:"Hi, this is an auto-reply from Calc360 👋",
+          })
+
         }
       }
 
