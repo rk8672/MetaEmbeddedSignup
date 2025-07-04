@@ -67,7 +67,7 @@ router.post('/', async (req, res) => {
             phoneNumberId:account.phoneNumberId,
             accessToken:account.accessToken,
             to:message.from,
-            message:"Hi, this is an auto-reply from Calc360 👋",
+            text:"Hi, this is an auto-reply from Calc360 👋",
           })
 
         }
