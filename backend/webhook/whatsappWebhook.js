@@ -3,7 +3,8 @@ const router = express.Router();
 
 const WhatsAppAccount = require('../models/WhatsAppAccount');
 const MessageLog = require('../models/MessageLog');
-const sendTextMessage =require('../services/whatsappServices/sendTextMessage')
+const sendTextMessage =require('../services/whatsappServices/sendTextMessage');
+const sendButtonMessage = require('../services/whatsappServices/sendInteractiveButtons');
 // Parse incoming JSON (in case not set globally)
 router.use(express.json());
 
@@ -68,7 +69,14 @@ router.post('/', async (req, res) => {
             accessToken:account.accessToken,
             to:message.from,
             text:"Hi, this is an auto-reply from Calc360 👋",
-          })
+          });
+
+          //Send Button reply to user
+          await sendButtonMessage({
+  phoneNumberId: account.phoneNumberId,
+  accessToken: account.accessToken,
+  to: message.from,
+});
 
         }
       }
