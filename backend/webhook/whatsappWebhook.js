@@ -4,10 +4,9 @@ const router = express.Router();
 const WhatsAppAccount = require('../models/WhatsAppAccount');
 const MessageLog = require('../models/MessageLog');
 
-// Middleware to ensure body is parsed (in case not set globally)
 router.use(express.json());
 
-// ✅ Webhook verification route (GET)
+// ✅ Verification route (only for GET requests from Meta setup)
 router.get('/', (req, res) => {
   const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
   const mode = req.query['hub.mode'];
@@ -20,52 +19,57 @@ router.get('/', (req, res) => {
   }
 
   console.warn('❌ Webhook verification failed');
-  res.status(403).send('Verification failed');
+  return res.sendStatus(403);
 });
 
-// ✅ Webhook callback route (POST)
+// ✅ Webhook callback route (POST from Meta or Postman)
 router.post('/', async (req, res) => {
   try {
-    console.log('📡 Incoming webhook received');
-    console.log(JSON.stringify(req.body, null, 2)); // debug: full payload
-
     const body = req.body;
+    console.log('📡 Webhook POST received:');
+    console.dir(body, { depth: null });
 
     if (body.object === 'whatsapp_business_account') {
-      const entry = body.entry?.[0];
-      const change = entry?.changes?.[0];
-      const value = change?.value;
-      const message = value?.messages?.[0];
-      const phoneNumberId = value?.metadata?.phone_number_id;
+      const entries = body.entry || [];
 
-      if (!phoneNumberId || !message) {
-        console.warn('⚠️ Missing phoneNumberId or message in webhook payload');
-        return res.sendStatus(400);
+      for (const entry of entries) {
+        for (const change of entry.changes || []) {
+          const value = change.value;
+          const message = value?.messages?.[0];
+          const phoneNumberId = value?.metadata?.phone_number_id;
+
+          if (!message || !phoneNumberId) {
+            console.warn('⚠️ Missing message or phoneNumberId');
+            continue;
+          }
+
+          const account = await WhatsAppAccount.findOne({ phoneNumberId });
+          if (!account) {
+            console.warn(`❌ No account found for ${phoneNumberId}`);
+            continue;
+          }
+
+          await MessageLog.create({
+            organizationId: account.organizationId,
+            whatsappAccountId: account._id,
+            direction: 'inbound',
+            message,
+            timeStamp: new Date(Number(message.timestamp) * 1000) || new Date()
+          });
+
+          console.log(`📥 Message from ${message.from}: ${message.text?.body}`);
+        }
       }
 
-      const account = await WhatsAppAccount.findOne({ phoneNumberId });
-      if (!account) {
-        console.warn(`❌ WhatsApp account not found for ID: ${phoneNumberId}`);
-        return res.status(404).send('Account not found');
-      }
-
-      await MessageLog.create({
-        organizationId: account.organizationId, // ✅ multi-tenant tracking
-        whatsappAccountId: account._id,
-        direction: 'inbound',
-        message: message,
-        timeStamp: new Date(Number(message.timestamp) * 1000) || new Date()
-      });
-
-      console.log(`📥 Message logged from ${message.from}: ${message.text?.body}`);
-      console.log('✅ Message received and stored successfully.');
       return res.sendStatus(200);
     }
 
-    res.sendStatus(400); // not a WhatsApp webhook
+    // Allow non-Meta test POSTs (e.g. Postman tests)
+    console.warn('⚠️ POST payload not recognized, but accepted');
+    return res.sendStatus(200);
   } catch (err) {
-    console.error('❌ Webhook error:', err);
-    res.sendStatus(500);
+    console.error('❌ Webhook POST error:', err);
+    return res.sendStatus(500);
   }
 });
 
