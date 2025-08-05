@@ -1,9 +1,6 @@
-import {useState} from "react";
 import { motion as Motion } from 'framer-motion';
 import { CalendarPlus } from 'lucide-react';
-import AppointmentDrawer from "../components/appointmentDrawer/AppointmentDrawer";
 export default function PageWrapper({ title, subtitle, actions, children }) {
-    const [isDrawerOpen, setDrawerOpen] = useState(false);
   return (
     <Motion.div
       className="relative min-h-full   "
@@ -41,18 +38,8 @@ export default function PageWrapper({ title, subtitle, actions, children }) {
   transition={{ delay: 0.6, duration: 0.3 }}
 >
 
-  <Motion.button
-    onClick={() => setDrawerOpen(true)}
-    whileHover={{ scale: 1.08 }}
-    whileTap={{ scale: 0.95 }}
-    className="w-14 h-14 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center transition-all hover:shadow-xl"
-  >
-    <CalendarPlus className="w-6 h-6" />
-  </Motion.button>
-  <AppointmentDrawer
-    isOpen={isDrawerOpen}
-    onClose={() => setDrawerOpen(false)}
-  />
+  
+ 
 </Motion.div>
 
     </Motion.div>

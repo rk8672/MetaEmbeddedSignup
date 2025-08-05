@@ -1,75 +1,120 @@
+import React, { useEffect, useState } from "react";
 import PageWrapper from "../../layouts/PageWrapper";
-
+import axiosInstance from "../../utils/axiosInstance";
 import {
-  PlusCircle,
   Users,
-  CalendarCheck2,
-  FileText,
-  Stethoscope,
-  Thermometer,
-  CalendarPlus,
+  ClipboardList,
+  Loader2,
+  UserPlus,
+  PhoneCall,
+  Clock,
+  Link,
+  CheckCircle2,
+  ThumbsDown,
 } from "lucide-react";
 
+const statusMeta = {
+  "new": {
+    color: "bg-gray-100 text-gray-800",
+    icon: <UserPlus className="w-8 h-8 text-gray-800" />,
+  },
+  "assigned": {
+    color: "bg-purple-100 text-purple-800",
+    icon: <ClipboardList className="w-8 h-8 text-purple-800" />,
+  },
+  "in-contact": {
+    color: "bg-yellow-100 text-yellow-800",
+    icon: <PhoneCall className="w-8 h-8 text-yellow-800" />,
+  },
+  "follow-up": {
+    color: "bg-blue-100 text-blue-800",
+    icon: <Clock className="w-8 h-8 text-blue-800" />,
+  },
+  "payment-sent": {
+    color: "bg-indigo-100 text-indigo-800",
+    icon: <Link className="w-8 h-8 text-indigo-800" />,
+  },
+  "enrolled": {
+    color: "bg-green-100 text-green-800",
+    icon: <CheckCircle2 className="w-8 h-8 text-green-800" />,
+  },
+  "not-interested": {
+    color: "bg-red-100 text-red-800",
+    icon: <ThumbsDown className="w-8 h-8 text-red-800" />,
+  },
+};
+
 const Dashboard = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  const fetchDashboard = async () => {
+    try {
+      const res = await axiosInstance.get("/api/leads/dashboard");
+      setData(res.data);
+    } catch (error) {
+      console.error("Dashboard fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
 
-  const cards = [
-    {
-      title: "Total Patients",
-      value: "1,245",
-      icon: <Users className="w-5 h-5 text-blue-600" />,
-      color: "border border-blue-200 bg-blue-50 text-blue-800",
-    },
-    {
-      title: "Appointments Today",
-      value: "34",
-      icon: <CalendarCheck2 className="w-5 h-5 text-green-600" />,
-      color: "border border-green-200 bg-green-50 text-green-800",
-    },
-    {
-      title: "Pending Reports",
-      value: "12",
-      icon: <FileText className="w-5 h-5 text-yellow-600" />,
-      color: "border border-yellow-200 bg-yellow-50 text-yellow-800",
-    },
-    {
-      title: "Active Consultations",
-      value: "8",
-      icon: <Stethoscope className="w-5 h-5 text-purple-600" />,
-      color: "border border-purple-200 bg-purple-50 text-purple-800",
-    },
-    {
-      title: "Devices Online",
-      value: "16",
-      icon: <Thermometer className="w-5 h-5 text-red-600" />,
-      color: "border border-red-200 bg-red-50 text-red-800",
-    },
-  ];
+  if (loading) {
+    return (
+      <PageWrapper>
+        <div className="flex justify-center items-center p-10 text-gray-600">
+          <Loader2 className="animate-spin mr-2" /> Loading dashboard...
+        </div>
+      </PageWrapper>
+    );
+  }
 
   return (
-    <PageWrapper
-      title="Dashboard"
-      subtitle="Automated insights into hospital operations"
-    >
-      <div className="grid grid-cols-1 bg-white rounded rounded-3xl p-6 sm:grid-cols-2 xl:grid-cols-3 gap-6 ">
-        {cards.map((card, index) => (
-          <div
-            key={index}
-            className={`p-5 rounded-lg ${card.color} transition-all duration-300`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">{card.title}</span>
-              <div className="bg-white rounded-full p-2 border">
-                {card.icon}
-              </div>
-            </div>
-            <div className="text-2xl font-bold">{card.value}</div>
-          </div>
-        ))}
+    <PageWrapper>
+      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <DashboardCard
+          icon={<ClipboardList className="w-10 h-10 text-blue-600" />}
+          label="Total Leads"
+          value={data.totalLeads}
+          textColor="text-blue-600"
+        />
+      </div>
+
+      {/* Lead Status Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {Object.entries(data.statusBreakdown).map(([status, count]) => {
+          const meta = statusMeta[status] || {};
+          return (
+            <DashboardCard
+              key={status}
+              icon={meta.icon}
+              label={status.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+              value={count}
+              bgColor={meta.color?.split(" ")[0]}
+              textColor={meta.color?.split(" ")[1]}
+            />
+          );
+        })}
       </div>
     </PageWrapper>
   );
 };
+
+const DashboardCard = ({ icon, label, value, bgColor = "bg-white", textColor = "text-gray-700" }) => (
+  <div className={`rounded-lg shadow-sm border p-4 flex items-center gap-4 ${bgColor}`}>
+    {icon}
+    <div>
+      <h2 className="text-sm font-semibold text-gray-600">{label}</h2>
+      <p className={`text-2xl font-bold ${textColor}`}>{value}</p>
+    </div>
+  </div>
+);
 
 export default Dashboard;

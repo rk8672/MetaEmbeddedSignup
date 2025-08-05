@@ -1,25 +1,31 @@
-const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
+const jwt = require("jsonwebtoken");
+const User = require("../models/User/User");
 
-dotenv.config();
+// Auth required
+exports.protect = async (req, res, next) => {
+  let token = req.headers.authorization?.split(" ")[1];
 
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-
-  // Check if Authorization header exists and starts with Bearer
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ message: 'Access token missing' });
-  }
+  if (!token) return res.status(401).json({ message: "No token provided" });
 
   try {
-    const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    req.user = decoded; // { id, role, iat, exp }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secretKey");
+    req.user = await User.findById(decoded.id).select("-password");
     next();
   } catch (err) {
-    return res.status(403).json({ message: 'Invalid or expired token' });
+    res.status(401).json({ message: "Invalid token", error: err.message });
   }
 };
 
-module.exports = authenticateToken;
+// Admin only
+exports.adminOnly = (req, res, next) => {
+  if (req.user?.role !== "admin")
+    return res.status(403).json({ message: "Access denied: Admins only" });
+  next();
+};
+
+// Staff only
+exports.staffOnly = (req, res, next) => {
+  if (req.user?.role !== "staff")
+    return res.status(403).json({ message: "Access denied: Staff only" });
+  next();
+};

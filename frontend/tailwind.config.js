@@ -4,10 +4,22 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-   theme: {
+  theme: {
     extend: {
+      colors: {
+        brandBlue: "#006699",
+        brandTeal: "#00B3B3",
+        brandAqua: "#33CCCC",
+      },
       animation: {
-        slowSpin: 'spin 10s linear infinite',
+        fadeIn: 'fadeIn 1.2s ease-out',
+        fadeInSlow: 'fadeIn 2.5s ease-out',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: 0, transform: 'translateY(-10px)' },
+          '100%': { opacity: 1, transform: 'translateY(0)' },
+        },
       },
     },
   },

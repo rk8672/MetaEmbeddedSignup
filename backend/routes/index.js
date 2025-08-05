@@ -1,37 +1,30 @@
 const express = require("express");
 const router = express.Router();
-const authMiddleware = require("../middlewares/authMiddleware");
+const {protect} = require("../middlewares/authMiddleware");
 
 
 
-//Public 
-const loginOrgUser = require("./loginRoutes.js");
-router.use("/", loginOrgUser);
-
-const organizationRoutes = require("./organization_Routes.js");
-router.use("/", organizationRoutes);
+const userRoutes=require("../routes/User/authRoutes");
+router.use("/user", userRoutes);
 
 
 
-//Privet
-
-const patientRoute=require("../routes/patient_Routes.js")
-router.use("/",authMiddleware,patientRoute)
-
-const doctorRoute=require("../routes/Doctor_Route.js");
-router.use("/",authMiddleware,doctorRoute);
+const leadRoutes=require("../routes/Lead/leadRoutes");
+router.use("/leads", leadRoutes);
 
 
-const appointmentRoute=require("../routes/Appointemnt_Route.js")
-router.use("/",authMiddleware,appointmentRoute);
-
-const organizationUser=require("./orgUser_Routes.js");
-router.use('/',authMiddleware,organizationUser);
-
-const whatsappRoutes=require('../routes/whatsappRoutes.js');
-router.use("/",authMiddleware,whatsappRoutes);
+router.use(protect);
 
 
-const messageRoutes=require('../routes/Messages_Route.js');
-router.use('/',messageRoutes);
+const emailRoutes=require("../routes/Email/emailRoutes");
+router.use("/email", emailRoutes);
+
+const recivedPaymentRoutes=require("../routes/RecivedPayment/recivedPaymentRoutes");
+router.use("/payments", recivedPaymentRoutes);
+
+
+
+
+
+
 module.exports = router;

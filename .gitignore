@@ -12,6 +12,4 @@ backend/build
 logs/
 *.log
 
-# System files
-.DS_Store
-Keys/medlitech-key.pem
+

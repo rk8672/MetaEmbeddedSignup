@@ -32,16 +32,17 @@ const TableWrapper = ({ title, description, columns = [], data = [], actions }) 
                 </td>
               </tr>
             ) : (
-              data.map((row, rowIndex) => (
+              data.map((item,index) => (
                 <tr
-                  key={rowIndex}
+                  key={item.id}
                   className="hover:bg-blue-50/30 transition-colors duration-200"
                 >
+                 
                   {columns.map((col, colIndex) => (
                     <td key={colIndex} className="px-6 py-4 whitespace-nowrap text-gray-800">
                       {typeof col.render === "function"
-                        ? col.render(row)
-                        : row[col.key]}
+                        ? col.render(item,index)
+                        : item[col.key]}
                     </td>
                   ))}
                 </tr>
