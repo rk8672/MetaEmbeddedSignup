@@ -1,7 +1,7 @@
 // Imports...
 import React, { useState, useEffect, useRef } from "react";
-import { Target, PhoneCall, GraduationCap, Briefcase, User, Mail, Smartphone } from "lucide-react";
-
+import { Target, PhoneCall, GraduationCap, Briefcase, User, Mail, Smartphone,MapPinned,UserRoundCheck,CalendarDays,Rocket } from "lucide-react";
+import axiosInstance from"../../utils/axiosInstance";
 const LeadForm = () => {
   const [lead, setLead] = useState({
     fullName: "",
@@ -23,48 +23,64 @@ const LeadForm = () => {
     }
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+const handleChange = (e) => {
+  const { name, value } = e.target;
+
+  // Only digits for phone number
+  if (name === "mobile") {
+    if (/^\d*$/.test(value)) {
+      setLead((prev) => ({ ...prev, [name]: value }));
+    }
+  } else {
     setLead((prev) => ({ ...prev, [name]: value }));
-  };
+  }
+};
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    try {
-      const res = await fetch("http://localhost:10000/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(lead),
-      });
-      const data = await res.json();
-      if (res.ok) setSubmittedData(data.data);
-      else throw new Error(data.message || "Submission failed");
-    } catch {
-      setError("Something went wrong. Please try again later.");
-    }
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
 
-  const handleAlreadyRegistered = async () => {
-    if (!emailToCheck) return alert("Please enter an email");
-    setChecking(true);
-    setError("");
-    try {
-      const res = await fetch(`http://localhost:10000/api/leads/check?email=${emailToCheck}`);
-      const data = await res.json();
-      if (res.ok) {
-        setSubmittedData(data.data);
-        setAlreadyRegistered(false);
-      } else {
-        setError(data.message || "Student not found");
-      }
-    } catch {
-      setError("Failed to fetch student. Try again later.");
-    } finally {
-      setChecking(false);
-    }
-  };
+  const fullName = lead.fullName.trim();
+  const email = lead.email.trim();
+  const mobile = lead.mobile.trim();
 
+  if (!fullName || fullName.length < 2) {
+    return setError("Please enter a valid full name.");
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return setError("Please enter a valid email address.");
+  }
+
+  const mobileRegex = /^\d{10}$/;
+  if (!mobileRegex.test(mobile)) {
+    return setError("Phone number must be exactly 10 digits.");
+  }
+
+  try {
+    const res = await axiosInstance.post("/api/leads", { ...lead, fullName, email, mobile });
+    setSubmittedData(res.data.data);
+  } catch (error) {
+    setError(error.response?.data?.message || "Something went wrong. Please try again later.");
+  }
+};
+
+const handleAlreadyRegistered = async () => {
+  if (!emailToCheck) return alert("Please enter an email");
+  setChecking(true);
+  setError("");
+
+  try {
+    const res = await axiosInstance.get(`/api/leads/check?email=${emailToCheck}`);
+    setSubmittedData(res.data.data);
+    setAlreadyRegistered(false);
+  } catch (error) {
+    setError(error.response?.data?.message || "Student not found");
+  } finally {
+    setChecking(false);
+  }
+};
   return (
     <div className="max-w-6xl mx-auto my-10 flex flex-col md:flex-row bg-white shadow-xl rounded-2xl overflow-hidden">
      <div className="md:w-1/2 flex flex-col text-white ">
@@ -84,48 +100,49 @@ const LeadForm = () => {
 
   {/* Program Benefits */}
   <div className="px-10 py-5 space-y-6 bg-brand-blue">
-    <h2 className="text-2xl font-semibold text-white border-b border-white/20 pb-2">
-      Program Benefits
-    </h2>
-    <ul className="space-y-5 text-base">
-      <li className="flex items-start gap-3">
-        <Target size={45} className="mt-1 text-white" />
-        <div>
-          <p className="font-semibold text-white">Career Roadmap</p>
-          <p className="text-sm text-white/70">
-            Structured path to become a skilled Security Operations Center Analyst.
-          </p>
-        </div>
-      </li>
-      <li className="flex items-start gap-3">
-        <PhoneCall size={30} className="mt-1 text-white" />
-        <div>
-          <p className="font-semibold text-white">1:1 Counselling</p>
-          <p className="text-sm text-white/70">
-            Personalized guidance to help you align learning with your goals.
-          </p>
-        </div>
-      </li>
-      <li className="flex items-start gap-3">
-        <GraduationCap size={45} className="mt-1 text-white" />
-        <div>
-          <p className="font-semibold text-white">Cyber Events Access</p>
-          <p className="text-sm text-white/70">
-            Participate in exclusive industry events and capture-the-flag competitions.
-          </p>
-        </div>
-      </li>
-      <li className="flex items-start gap-3">
-        <Briefcase size={30} className="mt-1 text-white" />
-        <div>
-          <p className="font-semibold text-white">Placement Support</p>
-          <p className="text-sm text-white/70">
-            Get help with resumes, interviews, and job opportunities.
-          </p>
-        </div>
-      </li>
-    </ul>
-  </div>
+  <h2 className="text-2xl font-semibold text-white border-b border-white/20 pb-2">
+     What You’ll Get
+  </h2>
+  <ul className="space-y-5 text-base">
+    <li className="flex items-start gap-3">
+      <MapPinned size={50} className="mt-1 text-white" />
+      <div>
+        <p className="font-semibold text-white">Structured Career Path</p>
+        <p className="text-sm text-white/70">
+          Step-by-step roadmap to become a top-tier SOC Analyst.
+        </p>
+      </div>
+    </li>
+    <li className="flex items-start gap-3">
+      <UserRoundCheck size={50} className="mt-1 text-white" />
+      <div>
+        <p className="font-semibold text-white">Personal Mentorship</p>
+        <p className="text-sm text-white/70">
+          1-on-1 guidance to align your learning with career goals.
+        </p>
+      </div>
+    </li>
+    <li className="flex items-start gap-3">
+      <CalendarDays size={50} className="mt-1 text-white" />
+      <div>
+        <p className="font-semibold text-white">Live Cyber Events</p>
+        <p className="text-sm text-white/70">
+          Join real-world events, workshops, and CTFs to build skills.
+        </p>
+      </div>
+    </li>
+    <li className="flex items-start gap-3">
+      <Rocket size={50} className="mt-1 text-white" />
+      <div>
+        <p className="font-semibold text-white">Job Launch Support</p>
+        <p className="text-sm text-white/70">
+          Resume reviews, interview prep & job referrals to get hired.
+        </p>
+      </div>
+    </li>
+  </ul>
+</div>
+
 </div>
 
       {/* Form Area */}
@@ -345,16 +362,17 @@ const LeadForm = () => {
       <Smartphone className="text-brand-teal mr-2" />
       Phone Number
     </label>
-    <input
-      type="tel"
-      id="mobile"
-      name="mobile"
-      placeholder="Enter your phone number"
-      value={lead.mobile}
-      onChange={handleChange}
-      required
-      className="w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-teal transition-all"
-    />
+  <input
+  type="tel"
+  id="mobile"
+  name="mobile"
+  placeholder="Enter your phone number"
+  value={lead.mobile}
+  onChange={handleChange}
+  maxLength={10}
+  required
+  className="w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-teal transition-all"
+/>
   </div>
 
   {/* Error Message */}

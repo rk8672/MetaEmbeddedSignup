@@ -12,7 +12,7 @@ export default function AppLayout() {
      {/* Sidebar */}
    <aside
   className={`bg-white shadow-md transition-transform duration-300 z-40 
-  fixed inset-y-0 left-0 w-64 transform 
+  fixed inset-y-0 left-0  transform 
   ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
   lg:translate-x-0 lg:static lg:block`}
 >
@@ -21,7 +21,7 @@ export default function AppLayout() {
     onClick={() => setIsSidebarOpen(false)}
     className="lg:hidden absolute top-3 right-3 z-50"
   >
-    <X className="w-6 h-6 text-gray-700" />
+    <X className="w-10 h-10 text-red-700" />
   </button>
 
   {/* Actual sidebar content */}

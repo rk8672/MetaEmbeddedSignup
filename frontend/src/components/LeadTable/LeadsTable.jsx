@@ -166,10 +166,10 @@ const columns = [
     label: "#",
     render: (_, index) => (page - 1) * limit + index + 1,
   },
-   {
+  {
     label: "Date",
     render: (lead) => (
-      <div className="text-xs text-gray-600">
+      <div className="text-xs text-gray-600 whitespace-nowrap">
         {new Date(lead.createdAt).toLocaleDateString()}
       </div>
     ),
@@ -177,156 +177,145 @@ const columns = [
   {
     label: "Lead Info",
     render: (lead) => (
-      <div className="text-sm">
+      <div className="text-sm leading-tight space-y-0.5">
         <div className="font-semibold text-gray-800">{lead.fullName}</div>
         <div className="text-gray-600 text-xs">{lead.email}</div>
         <div className="text-gray-600 text-xs">{lead.mobile}</div>
       </div>
     ),
   },
-   
-  {
-    label: "Status",
-    render: (lead) => (
-      <span
-        className={`text-xs px-2 py-1 rounded-full font-semibold capitalize ${
-          statusColors[lead.status] || "bg-gray-100 text-gray-600"
-        }`}
-      >
-        {lead.status}
-      </span>
-    ),
-  },
-  {
+   {
     label: "Payment",
     render: (lead) =>
       Array.isArray(lead.payments) && lead.payments.length > 0 ? (
-        <div className="text-xs">
+        <div className="text-xs space-y-1">
           {lead.payments.map((p) => (
-            <div key={p._id} className="mb-1">
+            <div key={p._id} className=" pb-1">
               <div className="text-green-700 font-semibold">₹ {p.amount}</div>
-              <div className="text-gray-500">{new Date(p.date).toLocaleDateString()}</div>
-              <div className="text-gray-400">{p.transactionId}</div>
+              {/* <div className="text-gray-500 text-[11px]">
+                {new Date(p.date).toLocaleDateString()}
+              </div> */}
             </div>
           ))}
         </div>
       ) : (
-        <span className="text-xs text-red-600 font-medium">Payment not done</span>
+        <span className="text-xs text-red-600 font-medium">Not Paid</span>
       ),
   },
   {
-    label: "Update Status",
+    label: "Status",
     render: (lead) => (
-      <select
-        value={lead.status}
-        onChange={(e) => updateStatus(lead._id, e.target.value)}
-        className="px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none text-xs"
-      >
-        {Object.keys(statusColors).map((status) => (
-          <option key={status} value={status}>
-            {status}
-          </option>
-        ))}
-      </select>
+      <div className="flex flex-col gap-1 text-xs">
+        <div
+          className={`px-2 py-1 rounded font-semibold capitalize text-center w-fit ${
+            statusColors[lead.status] || "bg-gray-100 text-gray-600"
+          }`}
+        >
+          {lead.status}
+        </div>
+       <select
+  value=""
+  onChange={(e) => updateStatus(lead._id, e.target.value)}
+  className="px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none text-xs"
+>
+  <option value="" disabled hidden>
+    Update Status
+  </option>
+  {Object.keys(statusColors).map((status) => (
+    <option key={status} value={status}>
+      {status}
+    </option>
+  ))}
+</select>
+      </div>
     ),
   },
-
+ 
 {
   label: "Follow-up",
   render: (lead) => (
-    <div className="flex flex-col gap-2 text-xs">
-      {/* Add Follow-up: Orange-ish (#F59E0B) */}
+    <div className="flex flex-col gap-1 text-xs">
       <button
         onClick={() => {
           setSelectedFollowUpLead(lead);
           setIsFollowUpModalOpen(true);
         }}
-        className="px-3 py-1 rounded text-black transition font-medium shadow"
-        style={{ backgroundColor: "#F59E0B" }} // Tailwind's yellow-500
-        onMouseOver={(e) => (e.target.style.backgroundColor = "#D97706")} // yellow-600
-        onMouseOut={(e) => (e.target.style.backgroundColor = "#F59E0B")}
+        className="px-3 py-1.5 rounded bg-purple-600 text-white font-medium shadow-sm hover:bg-purple-700 transition duration-200"
       >
-        Add Follow-up
+        Add
       </button>
-
-      {/* See Follow-up: Soft Amber (#FBBF24) */}
       <button
         onClick={() => {
           setSelectedSeeFollowUpLead(lead);
           setIsSeeFollowUpModalOpen(true);
         }}
-        className="px-3 py-1 rounded text-black transition font-medium shadow"
-        style={{ backgroundColor: "#FBBF24" }} // amber-400
-        onMouseOver={(e) => (e.target.style.backgroundColor = "#F59E0B")} // amber-500
-        onMouseOut={(e) => (e.target.style.backgroundColor = "#FBBF24")}
+        className="px-3 py-1.5 rounded bg-purple-100 text-purple-800 font-medium shadow-sm hover:bg-purple-200 transition duration-200"
       >
-        See Follow-up
+        View
       </button>
     </div>
   ),
 },
   {
-    label: "Actions",
+    label: "Payment",
     render: (lead) => (
       <div className="flex flex-col gap-1 text-xs">
         <button
           onClick={() => handleSendLink(lead)}
-          className="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 transition"
+          className="bg-blue-800 py-1.5 text-white px-2 py-1 rounded hover:bg-blue-900 transition"
         >
           Send Link
         </button>
         <button
           onClick={() => handleAddPaymentClick(lead)}
-          className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition"
+          className="bg-blue-200 py-1.5 text-blue-800 px-2 py-1 rounded hover:bg-blue-300 transition"
         >
-          Add Payment
+          Add
         </button>
       </div>
     ),
   },
   {
-  label: "Assign Staff",
-  render: (lead) => (
-    <div className="flex flex-col gap-2 text-xs">
-     {user.role==="admin" &&
-     <>
-       <select
-        value={lead.assignedTo || ""}
-        onChange={(e) => assignStaff(lead._id, e.target.value)}
-        className="px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none text-xs bg-white"
-      >
-        <option value="">-- Select Staff --</option>
-        {staffList.map((staff) => (
-          <option key={staff._id} value={staff._id}>
-            {staff.name}
-          </option>
-        ))}
-      </select>
-     </>
-     }
-    
-
-      <div
-        className={`rounded-md px-3 py-2 text-xs ${
-          lead.assignedStaff?.name
-            ? "bg-gray-100 text-gray-800 border border-gray-300"
-            : "bg-red-100 text-red-700 border border-red-300"
-        }`}
-      >
-        {lead.assignedStaff?.name ? (
-          <>
-            <span className="font-semibold">{lead.assignedStaff.name}</span>
-            <br />
-            <span className="text-[10px]">{lead.assignedStaff.email}</span>
-          </>
-        ) : (
-          <span className="italic">Not Assigned</span>
+    label: "Assign Staff",
+    render: (lead) => (
+      <div className="flex flex-col gap-1 text-xs">
+        <div
+          className={`rounded-md px-3 py-2 border ${
+            lead.assignedStaff?.name
+              ? "bg-gray-100 text-gray-800 border-gray-300"
+              : "bg-red-100 text-red-700 border-red-300"
+          }`}
+        >
+          {lead.assignedStaff?.name ? (
+            <>
+              <span className="font-semibold">{lead.assignedStaff.name}</span>
+              <br />
+              <span className="text-[10px]">{lead.assignedStaff.email}</span>
+            </>
+          ) : (
+            <span className="italic">Not Assigned</span>
+          )}
+        </div>
+        {user.role === "admin" && (
+          <select
+            value={lead.assignedTo || ""}
+            onChange={(e) => assignStaff(lead._id, e.target.value)}
+            className="px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none text-xs bg-white"
+          >
+            <option value="">-- Select Staff --</option>
+            {staffList.map((staff) => (
+              <option key={staff._id} value={staff._id}>
+                {staff.name}
+              </option>
+            ))}
+          </select>
         )}
       </div>
-    </div>
-  ),
-},
+    ),
+  },
 ];
+
+
 
 
   const renderPagination = () => (
@@ -364,7 +353,7 @@ const columns = [
 
   return (
     <PageWrapper title="Leads Management" subtitle="Manage and update student leads here">
-      <div className="p-4">
+      <div className="p-0">
         {renderFilters()}
         {loading ? (
           <div className="p-8 text-center text-gray-500">Loading leads...</div>
