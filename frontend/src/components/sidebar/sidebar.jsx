@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../slices/authSlice";
-import { Home, Users, Settings, LogOut } from "lucide-react";
+import { Home, Users, Settings, LogOut ,Award } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import BrandLogo from "../../assets/BrandLogo/Logo_only.gif";
 import "./sidebar.css";
@@ -8,6 +8,7 @@ import "./sidebar.css";
 const allMenuItems = [
   { name: "Dashboard", icon: Home, path: "/Dashboard", roles: ["admin"] },
   { name: "Leads", icon: Users, path: "/leads", roles: ["admin", "staff"] },
+    // { name: "Certificate", icon: Award , path: "/certificate", roles: ["admin", "staff"] },
   { name: "Settings", icon: Settings, path: "/settings", roles: ["admin"] },
 ];
 

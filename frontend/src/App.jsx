@@ -15,6 +15,7 @@ import Login from './Pages/Login/Login';
 import LeadsTable from './components/LeadTable/LeadsTable';
 import UserManagement from './components/UserManagement/UserManagement';
 import Dashboard from './components/dashboard/dashboard';
+import CertificateGenerator from './components/certificate/CertificateGenerator';
 
 function App() {
   const dispatch = useDispatch();
@@ -68,6 +69,7 @@ function App() {
         >
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/leads" element={<LeadsTable />} />
+            <Route path="/certificate" element={<CertificateGenerator />} />
           <Route path="/settings" element={<UserManagement />} />
         </Route>
       </Routes>

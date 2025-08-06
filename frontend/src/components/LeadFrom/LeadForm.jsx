@@ -17,6 +17,10 @@ const LeadForm = () => {
   const [error, setError] = useState("");
   const mobileRef = useRef(null);
 
+
+  const [showLoader, setShowLoader] = useState(false);
+const [secondsLeft, setSecondsLeft] = useState(30);
+
   useEffect(() => {
     if (window.innerWidth < 768 && mobileRef.current) {
       mobileRef.current.scrollIntoView({ behavior: "smooth" });
@@ -57,12 +61,16 @@ const handleSubmit = async (e) => {
   if (!mobileRegex.test(mobile)) {
     return setError("Phone number must be exactly 10 digits.");
   }
-
+  setShowLoader(true);
+  setSecondsLeft(30);
   try {
     const res = await axiosInstance.post("/api/leads", { ...lead, fullName, email, mobile });
     setSubmittedData(res.data.data);
   } catch (error) {
     setError(error.response?.data?.message || "Something went wrong. Please try again later.");
+  }finally{
+      setShowLoader(false);
+  setSecondsLeft(0);
   }
 };
 
@@ -79,10 +87,12 @@ const handleAlreadyRegistered = async () => {
     setError(error.response?.data?.message || "Student not found");
   } finally {
     setChecking(false);
+  
   }
 };
   return (
     <div className="max-w-6xl mx-auto my-10 flex flex-col md:flex-row bg-white shadow-xl rounded-2xl overflow-hidden">
+    
      <div className="md:w-1/2 flex flex-col text-white ">
   {/* Header */}
   <div className="px-10 py-10 bg-opacity-95 bg-brand-blue">
@@ -148,7 +158,6 @@ const handleAlreadyRegistered = async () => {
       {/* Form Area */}
       <div ref={mobileRef} className="md:w-1/2 p-6 md:p-8">
       
-
         {/* Already Registered Section */}
         {alreadyRegistered ? (
           <div className="space-y-3">
@@ -382,8 +391,16 @@ const handleAlreadyRegistered = async () => {
   <button
     type="submit"
     className="w-full bg-brand-blue hover:bg-brand-teal text-white py-2 rounded-md font-semibold"
+     disabled={showLoader}
   >
-    Submit
+      {showLoader ? (
+    <>
+    
+      Please wait...
+    </>
+  ) : (
+    "Submit"
+  )}
   </button>
 
   {/* Already Registered */}
