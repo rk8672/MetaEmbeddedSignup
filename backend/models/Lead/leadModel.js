@@ -38,7 +38,7 @@ status: {
     "enrolled",           // 6. Enrollment confirmed, ready to start
     "not-interested"      // Rejected or unresponsive after follow-ups
   ],
-  default: "new-lead",
+  default: "new",
 },
 
     // Assigned telecaller
