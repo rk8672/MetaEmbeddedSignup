@@ -3,7 +3,7 @@ const transporter = require("../config/mailConfig");
 const notifyManagement = async ({ fullName, email, mobile }) => {
   const mailOptions = {
     from: process.env.FROM_EMAIL,
-    to: "info@cybervie.com", 
+    to: "admin@cybervie.in", 
     // to: "rky8672@gmail.com", 
     subject: "New Lead Registered - Cybervie",
     html: `
