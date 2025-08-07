@@ -1,6 +1,6 @@
 // Imports...
 import React, { useState, useEffect, useRef } from "react";
-import { Target, PhoneCall, GraduationCap, Briefcase, User, Mail, Smartphone,MapPinned,UserRoundCheck,CalendarDays,Rocket } from "lucide-react";
+import { MonitorPlay , Briefcase, User, Mail, Smartphone, ActivitySquare, Repeat } from "lucide-react";
 import axiosInstance from"../../utils/axiosInstance";
 const LeadForm = () => {
   const [lead, setLead] = useState({
@@ -19,7 +19,6 @@ const LeadForm = () => {
 
 
   const [showLoader, setShowLoader] = useState(false);
-const [secondsLeft, setSecondsLeft] = useState(30);
 
   useEffect(() => {
     if (window.innerWidth < 768 && mobileRef.current) {
@@ -62,7 +61,6 @@ const handleSubmit = async (e) => {
     return setError("Phone number must be exactly 10 digits.");
   }
   setShowLoader(true);
-  setSecondsLeft(30);
   try {
     const res = await axiosInstance.post("/api/leads", { ...lead, fullName, email, mobile });
     setSubmittedData(res.data.data);
@@ -70,7 +68,6 @@ const handleSubmit = async (e) => {
     setError(error.response?.data?.message || "Something went wrong. Please try again later.");
   }finally{
       setShowLoader(false);
-  setSecondsLeft(0);
   }
 };
 
@@ -109,49 +106,50 @@ const handleAlreadyRegistered = async () => {
   <div className="h-px bg-white my-3 mx-10" />
 
   {/* Program Benefits */}
-  <div className="px-10 py-5 space-y-6 bg-brand-blue">
+<div className="px-10 py-5 space-y-6 bg-brand-blue">
   <h2 className="text-2xl font-semibold text-white border-b border-white/20 pb-2">
-     What You’ll Get
+    What You’ll Get in Our Live Training
   </h2>
   <ul className="space-y-5 text-base">
     <li className="flex items-start gap-3">
-      <MapPinned size={50} className="mt-1 text-white" />
+      <MonitorPlay size={50} className="mt-1 text-white" />
       <div>
-        <p className="font-semibold text-white">Structured Career Path</p>
+        <p className="font-semibold text-white">Live Interactive Training</p>
         <p className="text-sm text-white/70">
-          Step-by-step roadmap to become a top-tier SOC Analyst.
+          Real-time sessions with expert instructors covering hands-on cybersecurity scenarios.
         </p>
       </div>
     </li>
     <li className="flex items-start gap-3">
-      <UserRoundCheck size={50} className="mt-1 text-white" />
+      <Briefcase size={50} className="mt-1 text-white" />
       <div>
-        <p className="font-semibold text-white">Personal Mentorship</p>
+        <p className="font-semibold text-white">Assured Placement Support</p>
         <p className="text-sm text-white/70">
-          1-on-1 guidance to align your learning with career goals.
+          Dedicated job assistance with resume building, interview coaching & direct company referrals.
         </p>
       </div>
     </li>
     <li className="flex items-start gap-3">
-      <CalendarDays size={50} className="mt-1 text-white" />
+      <ActivitySquare size={50} className="mt-1 text-white" />
       <div>
-        <p className="font-semibold text-white">Live Cyber Events</p>
+        <p className="font-semibold text-white">Real-Time Scenario Practice</p>
         <p className="text-sm text-white/70">
-          Join real-world events, workshops, and CTFs to build skills.
+          Work on live cyber incidents, threat simulations, and actual industry case studies.
         </p>
       </div>
     </li>
     <li className="flex items-start gap-3">
-      <Rocket size={50} className="mt-1 text-white" />
+      <Repeat size={50} className="mt-1 text-white" />
       <div>
-        <p className="font-semibold text-white">Job Launch Support</p>
+        <p className="font-semibold text-white">Any Domain to Cybersecurity</p>
         <p className="text-sm text-white/70">
-          Resume reviews, interview prep & job referrals to get hired.
+          Transition from any background – IT, non-IT, or fresh graduate – into cybersecurity careers.
         </p>
       </div>
     </li>
   </ul>
 </div>
+
 
 </div>
 
@@ -217,87 +215,87 @@ const handleAlreadyRegistered = async () => {
     </h6>
   
     <div className="relative">
-      <div className="space-y-4 ">
-        {(
-          submittedData.status === "not-interested"
-            ? ["not-interested"]
-            : [
-                "new",
-                "assigned",
-                "in-progress",
-                "payment-link-sent",
-                "payment-done",
-                "enrolled"
-              ]
-        ).map((step, index, stepsArray) => {
-          const currentIndex = stepsArray.indexOf(submittedData.status);
-          const isCompleted = index < currentIndex;
-          const isCurrent = index === currentIndex;
+    <div className="space-y-4 ">
+  {(
+    submittedData.status === "not-interested"
+      ? ["not-interested"]
+      : [
+          "new",
+          "mentor-assigned",
+          "mentor-in-contact",
+          "payment-link-sent",
+          "payment-done",
+          "enrolled"
+        ]
+  ).map((step, index, stepsArray) => {
+    const currentIndex = stepsArray.indexOf(submittedData.status);
+    const isCompleted = index < currentIndex;
+    const isCurrent = index === currentIndex;
 
-          // Custom label and description
-          const stepDetails = {
-            new: {
-              title: "Registration Completed",
-              desc: "You’ve successfully registered. Thank you!"
-            },
-            assigned: {
-              title: "Executive Assigned",
-              desc: "An executive has been assigned to your case."
-            },
-            "in-progress": {
-              title: "Executive In Contact",
-              desc: "Our executive is in contact with you. Cooperate with them to complete enrollment."
-            },
-            "payment-link-sent": {
-              title: "Payment Link Sent",
-              desc: "We’ve sent you a Razorpay payment link to your email. Please complete the payment."
-            },
-            "payment-done": {
-              title: "Payment Received",
-              desc: "We have received your payment successfully."
-            },
-            enrolled: {
-              title: "Enrollment Completed",
-              desc: "Your enrollment is now complete. Welcome!"
-            },
-            "not-interested": {
-              title: "Not Interested",
-              desc: "You’ve marked yourself as not interested. We’re here if you change your mind."
-            }
-          };
+    // Client-facing step details mapped from backend status
+    const stepDetails = {
+      new: {
+        title: "Registration Complete",
+        desc: "Successfully registered. Welcome aboard!"
+      },
+      "mentor-assigned": {
+        title: "Mentor Assigned",
+        desc: "Your dedicated mentor is ready to guide you."
+      },
+      "mentor-in-contact": {
+        title: "Mentor Contact",
+        desc: "Your mentor will reach out soon. Stay responsive!"
+      },
+      "payment-link-sent": {
+        title: "Confirmation Link Sent",
+        desc: "Razorpay link sent to your email. Complete enrollment to secure your spot."
+      },
+      "payment-done": {
+        title: "Enrollment Confirmed",
+        desc: "Your seat is confirmed. We're excited to have you!"
+      },
+      enrolled: {
+        title: "Ready to Start",
+        desc: "You're officially enrolled. Let's begin your journey!"
+      },
+      "not-interested": {
+        title: "Not Interested",
+        desc: "You’ve marked yourself as not interested. We’re here if you change your mind."
+      }
+    };
 
-          const { title, desc } = stepDetails[step];
+    const { title, desc } = stepDetails[step];
 
-          return (
-            <div key={step} className="relative z-10 flex items-start gap-2">
-              <div
-                className={`w-6 h-6 flex items-center justify-center rounded-full border-2 font-bold text-xs ${
-                  isCompleted
-                    ? "bg-green-500 border-green-500 text-white"
-                    : isCurrent
-                    ? "bg-yellow-400 border-yellow-400 text-white"
-                    : "bg-gray-200 border-gray-300 text-gray-600"
-                }`}
+    return (
+      <div key={step} className="relative z-10 flex items-start gap-2">
+        <div
+          className={`w-6 h-6 flex items-center justify-center rounded-full border-2 font-bold text-xs ${
+            isCompleted
+              ? "bg-green-500 border-green-500 text-white"
+              : isCurrent
+              ? "bg-yellow-400 border-yellow-400 text-white"
+              : "bg-gray-200 border-gray-300 text-gray-600"
+          }`}
+          style={{ minWidth: "30px", minHeight: "30px" }}
+        >
+          {isCompleted ? "✔" : index + 1}
+        </div>
 
-                style={{minWidth:"30px",minHeight:"30px"}}
-              >
-                {isCompleted ? "✔" : index + 1}
-              </div>
-
-              <div>
-                <h5
-                  className={`text-base font-semibold ${
-                    isCompleted || isCurrent ? "text-gray-900" : "text-gray-400"
-                  }`}
-                >
-                  {title}
-                </h5>
-                <p className="text-sm text-gray-500">{desc}</p>
-              </div>
-            </div>
-          );
-        })}
+        <div>
+          <h5
+            className={`text-base font-semibold ${
+              isCompleted || isCurrent ? "text-gray-900" : "text-gray-400"
+            }`}
+          >
+            {title}
+          </h5>
+          <p className="text-sm text-gray-500">{desc}</p>
+        </div>
       </div>
+    );
+  })}
+</div>
+
     </div>
 
     <div className="text-center mt-5 text-sm text-gray-600">

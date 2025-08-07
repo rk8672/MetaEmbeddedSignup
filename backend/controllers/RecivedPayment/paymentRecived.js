@@ -37,6 +37,9 @@ exports.attachPaymentToLead = async (req, res) => {
     await payment.save();
 
     lead.payments.push(payment._id);
+        // Automatically update status to "payment-done"
+    lead.status = "payment-done";
+
     await lead.save();
 
     res.status(201).json({

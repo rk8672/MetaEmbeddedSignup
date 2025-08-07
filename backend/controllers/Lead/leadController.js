@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const Lead = require("../../models/Lead/leadModel");
 const User = require("../../models/User/User");
 const { sendSimpleEmail } = require("../../services/firstWelcomeMail");
+const { notifyManagement } = require("../../services/firstNotifyManagement");
+
 const STATUS_LIST = [
   "new",
   "assigned",
@@ -16,23 +18,73 @@ const STATUS_LIST = [
 
 exports.createLead = async (req, res) => {
   try {
-    const lead = new Lead(req.body);
-    await lead.save();
+    const { fullName, email, mobile } = req.body;
 
-    // Send confirmation email (non-blocking, runs in background)
-    if (lead.email && lead.fullName) {
-      sendSimpleEmail({
-        to: lead.email,
-        fullName: lead.fullName,
-      }).catch((error) => {
-        console.error("Error sending confirmation email:", error);
+    // Basic server-side validations
+    if (!fullName || fullName.trim().length < 2) {
+      return res.status(400).json({ message: "Full name must be at least 2 characters long." });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email.trim())) {
+      return res.status(400).json({ message: "Invalid email format." });
+    }
+
+    const mobileRegex = /^\d{10}$/;
+    if (!mobile || !mobileRegex.test(mobile.trim())) {
+      return res.status(400).json({ message: "Phone number must be exactly 10 digits." });
+    }
+
+    // Check for duplicate leads by email or phone
+    const existingLead = await Lead.findOne({
+      $or: [
+        { email: email.trim().toLowerCase() },
+        { phone: mobile.trim() }
+      ]
+    });
+
+    if (existingLead) {
+      return res.status(409).json({
+        message: "This email or phone number has already been submitted.",
       });
     }
 
-    res.status(201).json({ message: "Lead created successfully", data: lead });
+    // Sanitize input and save new lead
+ const sanitizedLead = new Lead({
+  fullName: fullName.trim(),
+  email: email.trim().toLowerCase(),
+  mobile: mobile.trim(),
+  courseInterested: req.body.courseInterested?.trim(), 
+});
+
+    await sanitizedLead.save();
+
+    // Send confirmation email to student (non-blocking)
+    sendSimpleEmail({
+      to: sanitizedLead.email,
+      fullName: sanitizedLead.fullName,
+    }).catch((error) => {
+      console.error("❌ Error sending confirmation email:", error);
+    });
+
+    // Notify management team (non-blocking)
+    notifyManagement({
+      fullName: sanitizedLead.fullName,
+      email: sanitizedLead.email,
+      mobile: sanitizedLead.mobile,
+    }).catch((error) => {
+      console.error("❌ Error notifying management:", error);
+    });
+
+    return res.status(201).json({
+      message: "Lead submitted successfully.",
+      data: sanitizedLead,
+    });
   } catch (err) {
-    console.error("Error creating lead:", err);
-    res.status(500).json({ message: "Failed to create lead", error: err.message });
+    console.error("❌ Server error:", err);
+    return res.status(500).json({
+      message: "An unexpected error occurred. Please try again later.",
+    });
   }
 };
 
@@ -128,6 +180,7 @@ exports.addFollowUp = async (req, res) => {
     if (!lead) {
       return res.status(404).json({ message: "Lead not found" });
     }
+    const isFirstFollowUp = lead.followUps.length === 0;
 
     lead.followUps.push({
       note,
@@ -135,7 +188,9 @@ exports.addFollowUp = async (req, res) => {
       createdBy,
       date: new Date()
     });
-
+  if (isFirstFollowUp) {
+      lead.status = "mentor-in-contact";
+    }
     await lead.save();
 
     res.status(200).json({
@@ -212,7 +267,9 @@ exports.assignStaffToLead = async (req, res) => {
 
     const updatedLead = await Lead.findByIdAndUpdate(
       leadId,
-      { assignedStaff: staffId },
+      { assignedStaff: staffId,
+         status: "mentor-assigned",
+       },
       { new: true }
     ).populate("assignedStaff", "name email");
 

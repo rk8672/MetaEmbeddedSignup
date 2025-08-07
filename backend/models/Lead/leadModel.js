@@ -30,15 +30,15 @@ const leadSchema = new mongoose.Schema(
 status: {
   type: String,
   enum: [
-    "new",               // Just registered or form submitted
-    "assigned",          // Assigned to an executive, no contact yet
-    "in-progress",       // Executive has started contacting/following up
-    "payment-link-sent", // Payment link shared
-    "payment-done",      // Payment received
-    "enrolled",          // Fully enrolled
-    "not-interested"     // Clearly rejected or unresponsive after follow-ups
+    "new",           // 1. Just registered (form submitted)
+    "mentor-assigned",    // 2. Mentor/executive assigned
+    "mentor-in-contact",  // 3. Mentor has reached out or is in contact
+    "payment-link-sent",  // 4. Payment (Razorpay) link sent
+    "payment-done",       // 5. Payment received
+    "enrolled",           // 6. Enrollment confirmed, ready to start
+    "not-interested"      // Rejected or unresponsive after follow-ups
   ],
-  default: "new",
+  default: "new-lead",
 },
 
     // Assigned telecaller

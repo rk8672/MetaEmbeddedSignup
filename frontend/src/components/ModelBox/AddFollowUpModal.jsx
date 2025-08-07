@@ -25,17 +25,19 @@ const AddFollowUpModal = ({ isOpen, onClose, onSubmit, lead }) => {
           rows={4}
           className="w-full border p-2 rounded mb-4"
         />
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="w-full mb-4 border p-2 rounded"
-        >
-          <option value="in-progress">In Progress</option>
-          <option value="payment-link-sent">Payment Link Sent</option>
-          <option value="payment-done">Payment Done</option>
-          <option value="enrolled">Enrolled</option>
-          <option value="not-interested">Not Interested</option>
-        </select>
+     <select
+  value={status}
+  onChange={(e) => setStatus(e.target.value)}
+  className="w-full mb-4 border p-2 rounded"
+>
+  <option value="new">New Lead</option>
+  <option value="mentor-assigned">Mentor Assigned</option>
+  <option value="mentor-in-contact">Mentor In Contact</option>
+  <option value="payment-link-sent">Payment Link Sent</option>
+  <option value="payment-done">Payment Done</option>
+  <option value="enrolled">Enrolled</option>
+  <option value="not-interested">Not Interested</option>
+</select>
         <div className="flex justify-end gap-2 mb-6">
           <button onClick={onClose} className="px-4 py-2 border rounded">Cancel</button>
           <button

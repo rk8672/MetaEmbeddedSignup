@@ -4,18 +4,25 @@ const sendSimpleEmail = async ({ to, fullName }) => {
   const mailOptions = {
     from: process.env.FROM_EMAIL,
     to,
-    subject: "Registration Confirmation - CyberVie",
+    subject: "We've received your form - Cybervie",
     html: `
-      <div style="font-family:Arial, sans-serif; padding:20px;">
-        <h2>Hello ${fullName},</h2>
-        <p>🎉 Thank you for registering with us!</p>
-        <p>Our executive will contact you shortly to assist with your enrollment process.</p>
-        <p>You can also check your enrollment status anytime.</p>
+      <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6;">
+        <h2>Hi ${fullName},</h2>
+        <p>Thank you for submitting your form! We've received your information and are excited to help you start your cybersecurity journey.</p>
+        
+        <h3>What's Next?</h3>
+        <p>Our team will review your details and get back to you within 24 hours with personalized guidance on your career transition.</p>
+        
+        <h3>Need Immediate Assistance?</h3>
+        <p>If you're looking for a quicker response or need immediate attention, feel free to reach out to us directly on WhatsApp:</p>
         <p>
-          👉 <strong>Click on "Already have account"</strong> and enter your registered email to track your progress.
+          👉 <a href="https://wa.link/ro3s07" target="_blank">https://wa.link/ro3s07</a>
         </p>
+
+        <p>We're here to answer any questions and help you take the next step toward your cybersecurity career.</p>
+
         <br/>
-        <p>Best Regards,<br/>Team CyberVie</p>
+        <p>Best regards,<br/>Cybervie</p>
       </div>
     `
   };

@@ -9,13 +9,13 @@ import AddFollowUpModal from "../ModelBox/AddFollowUpModal";
 import SeeFollowUpModal from "../ModelBox/SeeFollowUpModal";
 import { useSelector } from "react-redux";
 const statusColors = {
-  "new": "bg-gray-100 text-gray-800",               // Lead submitted form but not yet assigned
-  "assigned": "bg-purple-100 text-purple-800",       // Admin has assigned this lead to a staff member
-  "in-progress": "bg-yellow-100 text-yellow-800",     // Staff has started communication (call/chat in progress)
-  "payment-link-sent": "bg-indigo-100 text-indigo-800",   // Payment link or invoice shared with the lead, waiting for payment
-  "payment-done": "bg-indigo-100 text-indigo-800",   // Payment link or invoice shared with the lead, waiting for payment
-  "enrolled": "bg-green-100 text-green-800",         // Payment received and admission completed
-  "not-interested": "bg-red-100 text-red-800",       // Lead is either uninterested, unreachable, or dropped
+  "new": "bg-gray-100 text-gray-800",               // Just registered (form submitted)
+  "mentor-assigned": "bg-purple-100 text-purple-800",    // Mentor/executive assigned
+  "mentor-in-contact": "bg-yellow-100 text-yellow-800",  // Mentor is in contact
+  "payment-link-sent": "bg-indigo-100 text-indigo-800",  // Payment link shared
+  "payment-done": "bg-blue-100 text-blue-800",           // Payment received
+  "enrolled": "bg-green-100 text-green-800",             // Enrollment confirmed
+  "not-interested": "bg-red-100 text-red-800",           // Rejected or unresponsive
 };
 
 const LeadsTable = () => {
@@ -103,7 +103,7 @@ const [selectedSeeFollowUpLead, setSelectedSeeFollowUpLead] = useState(null);
         contact: data.mobile,
         amount: data.amount,
       });
-
+       fetchLeads();
       setResultModalData({
         isOpen: true,
         type: "success",
@@ -131,7 +131,6 @@ const [selectedSeeFollowUpLead, setSelectedSeeFollowUpLead] = useState(null);
 const handleSubmitPayment = async (paymentData) => {
   try {
     const res = await axiosInstance.post("/api/payments/attach", paymentData);
-    alert("Payment attached successfully");
     fetchLeads();
   } catch (err) {
     console.error("Error submitting payment:", err);
@@ -144,7 +143,6 @@ const handleSubmitPayment = async (paymentData) => {
 const handleSubmitFollowUp = async (followUpData) => {
   try {
     await axiosInstance.post(`/api/leads/followup/${selectedFollowUpLead._id}`, followUpData);
-    alert("Follow-up added successfully");
     setIsFollowUpModalOpen(false);
     fetchLeads();
   } catch (err) {
@@ -352,16 +350,18 @@ const columns = [
   );
 
   return (
-    <PageWrapper title="Leads Management" subtitle="Manage and update student leads here">
+    // <PageWrapper title="Leads Management" subtitle="Manage and update student leads here">
+    <PageWrapper title="Leads Management" subtitle="" actions={renderFilters()}>
+
       <div className="p-0">
-        {renderFilters()}
         {loading ? (
           <div className="p-8 text-center text-gray-500">Loading leads...</div>
         ) : (
           <>
             <TableWrapper
-              title="Leads Overview"
+              // title="Leads Management"
               description={`Showing page ${page} of ${totalPages}`}
+                title=""
               columns={columns}
               data={leads}
             />
