@@ -17,7 +17,12 @@ const statusColors = {
   "enrolled": "bg-green-100 text-green-800",             // Enrollment confirmed
   "not-interested": "bg-red-100 text-red-800",           // Rejected or unresponsive
 };
-
+const priorityColors = {
+  hot: "bg-red-100 text-red-700",
+  warm: "bg-yellow-100 text-yellow-700",
+  cold: "bg-blue-100 text-blue-700",
+  dead: "bg-gray-200 text-gray-600",
+};
 const LeadsTable = () => {
   const user=useSelector((state)=>(state.auth.user))
   const [leads, setLeads] = useState([]);
@@ -43,6 +48,7 @@ const [selectedFollowUpLead, setSelectedFollowUpLead] = useState(null);
 const [isSeeFollowUpModalOpen, setIsSeeFollowUpModalOpen] = useState(false);
 const [selectedSeeFollowUpLead, setSelectedSeeFollowUpLead] = useState(null);
 
+const [fieldLoading, setFieldLoading] = useState({});
   const fetchLeads = async () => {
     setLoading(true);
     try {
@@ -61,7 +67,35 @@ const [selectedSeeFollowUpLead, setSelectedSeeFollowUpLead] = useState(null);
       setLoading(false);
     }
   };
+const setLoadingForField = (leadId, field, isLoading) => {
+  setFieldLoading(prev => {
+    const key = `${leadId}_${field}`;
+    if (isLoading) {
+      return { ...prev, [key]: true };
+    } else {
+      const { [key]: _, ...rest } = prev;
+      return rest;
+    }
+  });
+};
+  const refreshLeads = async () => {
+  const oldData = leads; // cache old data
+  setLeads(oldData); // keep showing old data until new arrives
 
+  try {
+    const res = await axiosInstance.get("/api/leads", {
+      params: {
+        page,
+        limit,
+        ...(statusFilter && { status: statusFilter }),
+      },
+    });
+    setLeads(res.data.data);
+    setTotalPages(res.data.meta.totalPages);
+  } catch (err) {
+    console.error("Error refreshing leads:", err);
+  }
+};
   const fetchStaff = async () => {
     try {
       const res = await axiosInstance.get("/api/user/staff");
@@ -72,20 +106,38 @@ const [selectedSeeFollowUpLead, setSelectedSeeFollowUpLead] = useState(null);
   };
 
   const updateStatus = async (id, newStatus) => {
+     setLoadingForField(id, "status", true);
     try {
       await axiosInstance.put(`/api/leads/${id}`, { status: newStatus });
-      fetchLeads(); // refresh
+     await  refreshLeads(); // refresh
     } catch (err) {
       console.error("Failed to update status:", err);
+    }finally{
+      setLoadingForField(id, "status", false);
     }
   };
 
+  const updatePriorityStatus = async (id, newPriority) => { 
+     setLoadingForField(id, "priority", true);
+  try {
+    await axiosInstance.patch(`/api/leads/${id}/priority-status`, { priorityStatus: newPriority });
+   await  refreshLeads(); // refresh list
+  } catch (err) {
+    console.error("Failed to update priority status:", err);
+  }finally{
+     setLoadingForField(id, "priority", false);
+  }
+};
+
   const assignStaff = async (leadId, staffId) => {
+      setLoadingForField(leadId, "assignedStaff", true);
     try {
       await axiosInstance.patch(`/api/leads/assign/${leadId}`, { staffId });
-      fetchLeads(); // refresh
+     await  refreshLeads(); // refresh
     } catch (err) {
       console.error("Failed to assign staff:", err);
+    }finally{
+       setLoadingForField(leadId, "assignedStaff", false);
     }
   };
 
@@ -103,7 +155,7 @@ const [selectedSeeFollowUpLead, setSelectedSeeFollowUpLead] = useState(null);
         contact: data.mobile,
         amount: data.amount,
       });
-       fetchLeads();
+     await   refreshLeads();
       setResultModalData({
         isOpen: true,
         type: "success",
@@ -131,7 +183,7 @@ const [selectedSeeFollowUpLead, setSelectedSeeFollowUpLead] = useState(null);
 const handleSubmitPayment = async (paymentData) => {
   try {
     const res = await axiosInstance.post("/api/payments/attach", paymentData);
-    fetchLeads();
+   await  refreshLeads();
   } catch (err) {
     console.error("Error submitting payment:", err);
     alert(err?.response?.data?.message || "Failed to attach payment");
@@ -144,7 +196,7 @@ const handleSubmitFollowUp = async (followUpData) => {
   try {
     await axiosInstance.post(`/api/leads/followup/${selectedFollowUpLead._id}`, followUpData);
     setIsFollowUpModalOpen(false);
-    fetchLeads();
+   await  refreshLeads();
   } catch (err) {
     console.error("Error adding follow-up:", err);
     alert(err.response?.data?.message || "Failed to add follow-up");
@@ -209,7 +261,7 @@ const columns = [
             statusColors[lead.status] || "bg-gray-100 text-gray-600"
           }`}
         >
-          {lead.status}
+            {fieldLoading[`${lead._id}_status`] ? "Loading..." : lead.status} 
         </div>
        <select
   value=""
@@ -228,7 +280,37 @@ const columns = [
       </div>
     ),
   },
- 
+ {
+  label: "Priority",
+  render: (lead) => (
+    <div className="flex flex-col gap-1 text-xs">
+      {/* Show current priority */}
+      <div
+        className={`px-2 py-1 rounded font-semibold capitalize text-center w-fit ${
+          priorityColors[lead.priorityStatus] || "bg-gray-100 text-gray-600"
+        }`}
+      >
+    {fieldLoading[`${lead._id}_priority`] ? "Loading..." : (lead.priorityStatus || "Not Set")}
+      </div>
+
+      {/* Dropdown to update priority */}
+      <select
+        value=""
+        onChange={(e) => updatePriorityStatus(lead._id, e.target.value)}
+        className="px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none text-xs"
+      >
+        <option value="" disabled hidden>
+          Update Priority
+        </option>
+        {Object.keys(priorityColors).map((priority) => (
+          <option key={priority} value={priority}>
+            {priority}
+          </option>
+        ))}
+      </select>
+    </div>
+  ),
+},
 {
   label: "Follow-up",
   render: (lead) => (

@@ -40,7 +40,11 @@ status: {
   ],
   default: "new",
 },
-
+   priorityStatus: {
+      type: String,
+      enum: ["hot", "warm", "cold", "dead"],
+      
+    },
     // Assigned telecaller
     assignedStaff: {
       type: mongoose.Schema.Types.ObjectId,

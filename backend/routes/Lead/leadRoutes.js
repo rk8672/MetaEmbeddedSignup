@@ -31,7 +31,8 @@ router.patch('/assign/:leadId', leadController.assignStaffToLead);
 // POST /api/leads/:leadId/followup
 router.post("/followup/:leadId", leadController.addFollowUp);
 
-
+// Update only priorityStatus
+router.patch("/:id/priority-status", leadController.updatePriorityStatus);
 
 
 

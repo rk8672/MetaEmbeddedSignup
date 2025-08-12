@@ -232,6 +232,39 @@ exports.updateLead = async (req, res) => {
   }
 };
 
+// Update only priorityStatus
+exports.updatePriorityStatus = async (req, res) => {
+  try {
+    const { priorityStatus } = req.body;
+
+    // Validate input
+    const allowedStatuses = ["hot", "warm", "cold", "dead"];
+    if (!allowedStatuses.includes(priorityStatus)) {
+      return res.status(400).json({
+        message: `Invalid priorityStatus. Must be one of: ${allowedStatuses.join(", ")}`
+      });
+    }
+
+    const lead = await Lead.findByIdAndUpdate(
+      req.params.id,
+      { priorityStatus },
+      { new: true, runValidators: true }
+    );
+
+    if (!lead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+
+    res.status(200).json({
+      message: "Priority status updated successfully",
+      data: lead
+    });
+  } catch (err) {
+    console.error("Error updating priority status:", err);
+    res.status(500).json({ message: "Failed to update priority status", error: err.message });
+  }
+};
+
 // Delete a lead
 exports.deleteLead = async (req, res) => {
   try {

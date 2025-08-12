@@ -5,7 +5,7 @@ const notifyManagement = async ({ fullName, email, mobile }) => {
     from: process.env.FROM_EMAIL,
     // to: "info@cybervie.com",
     to: "admin@cybervie.in", 
-    // to: "rky8672@gmail.com", 
+    // to: "rky8672@gmail.com",  
     subject: "New Lead Registered - Cybervie",
     html: `
       <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6;">
