@@ -13,8 +13,10 @@ const dataConnection = require("./config/db.js");
 dataConnection();
 
 const whatsappWebhook=require('./webhook/whatsappWebhook');
+const razorpayWebhook = require('./webhook/razorpayWebhook');
+app.use('/webhook', razorpayWebhook);
+app.use('/webhook',whatsappWebhook);
 
-app.use('/webhook',whatsappWebhook)
 
 //Index Route
 const main = require("./routes/index.js");
