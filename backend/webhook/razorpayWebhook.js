@@ -41,7 +41,7 @@ router.post("/razorpay", async (req, res) => {
     console.log({
       linkId,
       paymentId: payment.id,
-      amount: payment.amount,
+      amount: payment.amount / 100,
       currency: payment.currency,
       status: payment.status,
       method: payment.method,

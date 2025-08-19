@@ -1,4 +1,4 @@
-const { createPaymentLink } = require("../../services/razorpayService"); 
+const { createPaymentLink } = require("../../services/razorpayService");  
 const { sendPaymentEmail } = require("../../services/emailService");
 const Lead = require("../../models/Lead/leadModel"); 
 
@@ -14,13 +14,15 @@ exports.sendPaymentLink = async (req, res) => {
     // Generate a unique link_id for this lead
     const customLinkId = `lead_${Date.now()}`;
 
-    // Create Razorpay payment link
+    // Create Razorpay payment link with full student info in notes
     const linkResult = await createPaymentLink({
       amount,
       customer: { name: fullName, email, contact },
       notes: {
         link_id: customLinkId,
-        lead_email: email
+        lead_email: email,
+        lead_name: fullName,
+        lead_contact: contact
       }
     });
 
@@ -47,7 +49,7 @@ exports.sendPaymentLink = async (req, res) => {
         $set: { status: "payment-link-sent" },
         $push: {
           paymentLinks: {
-            linkId: customLinkId,         // use the custom link_id for webhook matching
+            linkId: customLinkId,          // for webhook matching
             razorpayLinkId: linkResult.id, // Razorpay payment_link id
             orderId: linkResult.order_id || null,
             amount: amount,
