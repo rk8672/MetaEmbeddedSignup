@@ -6,7 +6,6 @@ exports.sendPaymentLink = async (req, res) => {
   try {
     const { fullName, email, contact, amount } = req.body;
 
-    // Validate input
     if (!email || !fullName || !contact || !amount) {
       return res.status(400).json({ message: "Missing required fields" });
     }
@@ -14,15 +13,12 @@ exports.sendPaymentLink = async (req, res) => {
     // Generate a unique link_id for this lead
     const customLinkId = `lead_${Date.now()}`;
 
-    // Create Razorpay payment link with full student info in notes
+    // Create Razorpay payment link with notes
     const linkResult = await createPaymentLink({
       amount,
       customer: { name: fullName, email, contact },
       notes: {
-        link_id: customLinkId,
-        lead_email: email,
-        lead_name: fullName,
-        lead_contact: contact
+        link_id: customLinkId
       }
     });
 
@@ -42,17 +38,16 @@ exports.sendPaymentLink = async (req, res) => {
       return res.status(500).json({ message: "Payment link created, but email failed" });
     }
 
-    // Update Lead document in MongoDB
+    // Save payment link and student info in MongoDB
     const updatedLead = await Lead.findOneAndUpdate(
       { email },
       {
         $set: { status: "payment-link-sent" },
         $push: {
           paymentLinks: {
-            linkId: customLinkId,          // for webhook matching
+            linkId: customLinkId,          // your internal id
             razorpayLinkId: linkResult.id, // Razorpay payment_link id
-            orderId: linkResult.order_id || null,
-            amount: amount,
+            amount,
             status: "created",
             createdAt: new Date()
           }

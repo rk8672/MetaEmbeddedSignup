@@ -46,19 +46,21 @@ status: {
       
     },
         // ✅ Multiple payment links
-    paymentLinks: [
-      {
-        linkId: { type: String, index: true }, // Razorpay Payment Link ID
-        orderId: { type: String, index: true }, // Razorpay Order ID (if applicable)
-        amount: Number,
-        status: {
-          type: String,
-          enum: ["created", "paid", "expired"],
-          default: "created"
-        },
-        createdAt: { type: Date, default: Date.now }
-      }
-    ],
+   paymentLinks: [
+  {
+    linkId: { type: String, index: true },       // Internal link ID
+    razorpayLinkId: { type: String, index: true }, // Razorpay Payment Link ID
+    orderId: { type: String, index: true },      // Razorpay Order ID
+    amount: Number,
+    status: {
+      type: String,
+      enum: ["created", "paid", "expired"],
+      default: "created"
+    },
+    contact: { type: String },   // Add this to store student mobile/contact
+    createdAt: { type: Date, default: Date.now }
+  }
+],
     // Assigned telecaller
     assignedStaff: {
       type: mongoose.Schema.Types.ObjectId,

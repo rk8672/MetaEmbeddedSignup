@@ -1,5 +1,6 @@
 const express = require("express");
 const crypto = require("crypto");
+const Lead = require("../models/Lead/leadModel");
 require("dotenv").config();
 
 const router = express.Router();
@@ -23,6 +24,7 @@ router.post("/razorpay", async (req, res) => {
 
     const event = req.body.event;
 
+    // Only handle payment.captured and payment.failed
     if (!["payment.captured", "payment.failed"].includes(event)) {
       console.log("ℹ️ Ignored non-payment event:", event);
       return res.status(200).send("Ignored event");
@@ -32,13 +34,23 @@ router.post("/razorpay", async (req, res) => {
     console.log("Event:", event);
 
     const payment = req.body.payload.payment.entity;
-
-    // Read full info from notes
     const linkId = payment.notes?.link_id || payment.payment_link_id;
-    const email = payment.notes?.lead_email || payment.email || "N/A";
-    const name = payment.notes?.lead_name || payment.name || "N/A";
-    const contact = payment.notes?.lead_contact || payment.contact || "N/A";
 
+    // Fetch student info from MongoDB using custom linkId
+    let studentInfo = { name: "N/A", email: "N/A", contact: "N/A" };
+    if (linkId) {
+      const lead = await Lead.findOne({ "paymentLinks.linkId": linkId });
+      if (lead) {
+        const paymentLink = lead.paymentLinks.find(p => p.linkId === linkId);
+        studentInfo = {
+          name: lead.fullName || "N/A",
+          email: lead.email || "N/A",
+          contact: paymentLink?.contact || "N/A"
+        };
+      }
+    }
+
+    // Log payment details
     console.log("💰 Payment Details:");
     console.log({
       linkId,
@@ -47,9 +59,7 @@ router.post("/razorpay", async (req, res) => {
       currency: payment.currency,
       status: payment.status,
       method: payment.method,
-      name,
-      email,
-      contact,
+      ...studentInfo,
       created_at: payment.created_at
     });
 
