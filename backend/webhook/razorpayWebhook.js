@@ -5,7 +5,6 @@ require("dotenv").config();
 const router = express.Router();
 const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;
 
-// /webhook/razorpay
 router.post("/razorpay", async (req, res) => {
   try {
     const webhookBody = JSON.stringify(req.body);
@@ -24,7 +23,6 @@ router.post("/razorpay", async (req, res) => {
 
     const event = req.body.event;
 
-    // Only process payment.captured or payment.failed
     if (!["payment.captured", "payment.failed"].includes(event)) {
       console.log("ℹ️ Ignored non-payment event:", event);
       return res.status(200).send("Ignored event");
@@ -34,19 +32,24 @@ router.post("/razorpay", async (req, res) => {
     console.log("Event:", event);
 
     const payment = req.body.payload.payment.entity;
-    const linkId = payment.notes?.link_id || payment.payment_link_id;
 
-    // Log all relevant payment info
+    // Read full info from notes
+    const linkId = payment.notes?.link_id || payment.payment_link_id;
+    const email = payment.notes?.lead_email || payment.email || "N/A";
+    const name = payment.notes?.lead_name || payment.name || "N/A";
+    const contact = payment.notes?.lead_contact || payment.contact || "N/A";
+
     console.log("💰 Payment Details:");
     console.log({
       linkId,
       paymentId: payment.id,
-      amount: payment.amount / 100,
+      amount: payment.amount / 100, // convert paise to rupees
       currency: payment.currency,
       status: payment.status,
       method: payment.method,
-      email: payment.email,
-      contact: payment.contact,
+      name,
+      email,
+      contact,
       created_at: payment.created_at
     });
 
