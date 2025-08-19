@@ -34,31 +34,42 @@ router.post("/razorpay", async (req, res) => {
 
     const payment = req.body.payload.payment.entity;
 
-    // Fetch student info from Razorpay notes or fallback to MongoDB
- const linkId = payment.notes?.link_id;
-
-let studentInfo = {
-  name: payment.notes?.lead_name || "N/A",
-  email: payment.notes?.lead_email || "N/A",
-  contact: payment.notes?.lead_contact || "N/A"
-};
-
-if (linkId && (!studentInfo.email || studentInfo.email === "N/A")) {
-  const lead = await Lead.findOne({ "paymentLinks.linkId": linkId });
-  if (lead) {
-    const paymentLink = lead.paymentLinks.find(p => p.linkId === linkId);
-    studentInfo = {
-      name: paymentLink?.lead_name || lead.fullName || "N/A",
-      email: paymentLink?.lead_email || lead.email || "N/A",
-      contact: paymentLink?.contact || lead.mobile || "N/A"
+    // Fetch student info from Razorpay notes
+    let studentInfo = {
+      name: payment.notes?.lead_name || "N/A",
+      email: payment.notes?.lead_email || "N/A",
+      contact: payment.notes?.lead_contact || "N/A"
     };
-  }
-}
+
+    // Try fetching from MongoDB fallback using linkId or razorpayLinkId
+    const linkId = payment.notes?.link_id;
+    const razorpayLinkId = payment.payment_link_id;
+
+    if (linkId || razorpayLinkId) {
+      const lead = await Lead.findOne({
+        $or: [
+          { "paymentLinks.linkId": linkId },
+          { "paymentLinks.razorpayLinkId": razorpayLinkId }
+        ]
+      });
+
+      if (lead) {
+        const paymentLink = lead.paymentLinks.find(p =>
+          p.linkId === linkId || p.razorpayLinkId === razorpayLinkId
+        );
+
+        studentInfo = {
+          name: paymentLink?.lead_name || lead.fullName || "N/A",
+          email: paymentLink?.lead_email || lead.email || "N/A",
+          contact: paymentLink?.contact || lead.mobile || "N/A"
+        };
+      }
+    }
 
     // Log payment details
     console.log("💰 Payment Details:");
     console.log({
-      linkId,
+      linkId: linkId || razorpayLinkId,
       paymentId: payment.id,
       amount: payment.amount / 100, // paise -> rupees
       currency: payment.currency,
