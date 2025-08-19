@@ -1,39 +1,61 @@
-const { createPaymentLink } = require("../../services/razorpayService");
+const { createPaymentLink } = require("../../services/razorpayService"); 
 const { sendPaymentEmail } = require("../../services/emailService");
 const Lead = require("../../models/Lead/leadModel"); 
+
 exports.sendPaymentLink = async (req, res) => {
-  const { fullName, email, contact, amount } = req.body;
+  try {
+    const { fullName, email, contact, amount } = req.body;
 
-  if (!email || !fullName || !contact || !amount) {
-    return res.status(400).json({ message: "Missing required fields" });
-  }
+    // Validate input
+    if (!email || !fullName || !contact || !amount) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
 
-  const linkResult = await createPaymentLink({
-    amount,
-    customer: { name: fullName, email, contact },
-  });
+    // Generate a unique link_id for this lead
+    const customLinkId = `lead_${Date.now()}`;
 
-  if (!linkResult.success) {
-    return res.status(500).json({ message: "Failed to create payment link" });
-  }
+    // Create Razorpay payment link
+    const linkResult = await createPaymentLink({
+      amount,
+      customer: { name: fullName, email, contact },
+      notes: {
+        link_id: customLinkId,
+        lead_email: email
+      }
+    });
 
-  const emailResult = await sendPaymentEmail({
-    to: email,
-    fullName,
-    link: linkResult.paymentLink,
-    amount,
-  });
+    if (!linkResult.success) {
+      return res.status(500).json({ message: "Failed to create payment link" });
+    }
 
+    // Send email to student
+    const emailResult = await sendPaymentEmail({
+      to: email,
+      fullName,
+      link: linkResult.paymentLink,
+      amount
+    });
 
-  if (!emailResult.success) {
-    return res.status(500).json({ message: "Payment link created, but email failed" });
-  }
+    if (!emailResult.success) {
+      return res.status(500).json({ message: "Payment link created, but email failed" });
+    }
 
-
-    // 3. Update lead status to "payment-link-sent"
+    // Update Lead document in MongoDB
     const updatedLead = await Lead.findOneAndUpdate(
-      { email }, // You can also use { email, contact } for more accuracy
-      { status: "payment-link-sent" },
+      { email },
+      {
+        $set: { status: "payment-link-sent" },
+        $push: {
+          paymentLinks: {
+            linkId: customLinkId,         // use the custom link_id for webhook matching
+            razorpayLinkId: linkResult.id, // Razorpay payment_link id
+            orderId: linkResult.order_id || null,
+            amount: amount,
+            status: "created",
+            createdAt: new Date()
+          }
+        }
+      },
       { new: true }
     );
 
@@ -41,5 +63,13 @@ exports.sendPaymentLink = async (req, res) => {
       return res.status(404).json({ message: "Lead not found to update status" });
     }
 
-  return res.status(200).json({ message: "Payment link sent and lead status updated successfully", link: linkResult.paymentLink });
+    return res.status(200).json({
+      message: "Payment link sent and lead status updated successfully",
+      link: linkResult.paymentLink
+    });
+
+  } catch (err) {
+    console.error("Error sending payment link:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };

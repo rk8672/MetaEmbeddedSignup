@@ -45,6 +45,20 @@ status: {
       enum: ["hot", "warm", "cold", "dead"],
       
     },
+        // ✅ Multiple payment links
+    paymentLinks: [
+      {
+        linkId: { type: String, index: true }, // Razorpay Payment Link ID
+        orderId: { type: String, index: true }, // Razorpay Order ID (if applicable)
+        amount: Number,
+        status: {
+          type: String,
+          enum: ["created", "paid", "expired"],
+          default: "created"
+        },
+        createdAt: { type: Date, default: Date.now }
+      }
+    ],
     // Assigned telecaller
     assignedStaff: {
       type: mongoose.Schema.Types.ObjectId,
