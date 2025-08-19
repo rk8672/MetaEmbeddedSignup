@@ -24,7 +24,6 @@ router.post("/razorpay", async (req, res) => {
 
     const event = req.body.event;
 
-    // Only handle payment.captured and payment.failed
     if (!["payment.captured", "payment.failed"].includes(event)) {
       console.log("ℹ️ Ignored non-payment event:", event);
       return res.status(200).send("Ignored event");
@@ -34,18 +33,24 @@ router.post("/razorpay", async (req, res) => {
     console.log("Event:", event);
 
     const payment = req.body.payload.payment.entity;
+
+    // Fetch student info from Razorpay notes or fallback to MongoDB
     const linkId = payment.notes?.link_id || payment.payment_link_id;
 
-    // Fetch student info from MongoDB using custom linkId
-    let studentInfo = { name: "N/A", email: "N/A", contact: "N/A" };
-    if (linkId) {
+    let studentInfo = {
+      name: payment.notes?.lead_name || "N/A",
+      email: payment.notes?.lead_email || "N/A",
+      contact: payment.notes?.lead_contact || "N/A"
+    };
+
+    // Fallback: fetch from DB if notes are missing
+    if (linkId && (!studentInfo.email || studentInfo.email === "N/A")) {
       const lead = await Lead.findOne({ "paymentLinks.linkId": linkId });
       if (lead) {
-        const paymentLink = lead.paymentLinks.find(p => p.linkId === linkId);
         studentInfo = {
           name: lead.fullName || "N/A",
           email: lead.email || "N/A",
-          contact: paymentLink?.contact || "N/A"
+          contact: lead.mobile || "N/A"
         };
       }
     }
@@ -55,7 +60,7 @@ router.post("/razorpay", async (req, res) => {
     console.log({
       linkId,
       paymentId: payment.id,
-      amount: payment.amount / 100, // convert paise to rupees
+      amount: payment.amount / 100, // paise -> rupees
       currency: payment.currency,
       status: payment.status,
       method: payment.method,
@@ -64,6 +69,7 @@ router.post("/razorpay", async (req, res) => {
     });
 
     res.status(200).send("OK");
+
   } catch (err) {
     console.error("Error handling webhook:", err);
     res.status(500).send("Server error");

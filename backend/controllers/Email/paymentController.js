@@ -1,4 +1,4 @@
-const { createPaymentLink } = require("../../services/razorpayService");  
+const { createPaymentLink } = require("../../services/razorpayService");   
 const { sendPaymentEmail } = require("../../services/emailService");
 const Lead = require("../../models/Lead/leadModel"); 
 
@@ -6,19 +6,23 @@ exports.sendPaymentLink = async (req, res) => {
   try {
     const { fullName, email, contact, amount } = req.body;
 
+    // Validate input
     if (!email || !fullName || !contact || !amount) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Generate a unique link_id for this lead
+    // Generate a unique internal linkId for your lead
     const customLinkId = `lead_${Date.now()}`;
 
-    // Create Razorpay payment link with notes
+    // Create Razorpay payment link with student info in notes
     const linkResult = await createPaymentLink({
       amount,
       customer: { name: fullName, email, contact },
       notes: {
-        link_id: customLinkId
+        link_id: customLinkId,
+        lead_name: fullName,
+        lead_email: email,
+        lead_contact: contact
       }
     });
 
@@ -38,15 +42,15 @@ exports.sendPaymentLink = async (req, res) => {
       return res.status(500).json({ message: "Payment link created, but email failed" });
     }
 
-    // Save payment link and student info in MongoDB
+    // Save payment link in MongoDB
     const updatedLead = await Lead.findOneAndUpdate(
       { email },
       {
         $set: { status: "payment-link-sent" },
         $push: {
           paymentLinks: {
-            linkId: customLinkId,          // your internal id
-            razorpayLinkId: linkResult.id, // Razorpay payment_link id
+            linkId: customLinkId,           // internal link ID
+            razorpayLinkId: linkResult.id,  // Razorpay payment_link id
             amount,
             status: "created",
             createdAt: new Date()
