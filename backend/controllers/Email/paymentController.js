@@ -15,16 +15,16 @@ exports.sendPaymentLink = async (req, res) => {
     const customLinkId = `lead_${Date.now()}`;
 
     // Create Razorpay payment link with student info in notes
-    const linkResult = await createPaymentLink({
-      amount,
-      customer: { name: fullName, email, contact },
-      notes: {
-        link_id: customLinkId,
-        lead_name: fullName,
-        lead_email: email,
-        lead_contact: contact
-      }
-    });
+ const linkResult = await createPaymentLink({
+  amount,
+  customer: { name: fullName, email, contact },
+  notes: {
+    link_id: customLinkId,
+    lead_name: fullName,
+    lead_email: email,
+    lead_contact: contact
+  }
+});
 
     if (!linkResult.success) {
       return res.status(500).json({ message: "Failed to create payment link" });
@@ -43,22 +43,24 @@ exports.sendPaymentLink = async (req, res) => {
     }
 
     // Save payment link in MongoDB
-    const updatedLead = await Lead.findOneAndUpdate(
-      { email },
-      {
-        $set: { status: "payment-link-sent" },
-        $push: {
-          paymentLinks: {
-            linkId: customLinkId,           // internal link ID
-            razorpayLinkId: linkResult.id,  // Razorpay payment_link id
-            amount,
-            status: "created",
-            createdAt: new Date()
-          }
-        }
-      },
-      { new: true }
-    );
+   await Lead.findOneAndUpdate(
+  { email },
+  {
+    $set: { status: "payment-link-sent" },
+$push: {
+  paymentLinks: {
+    linkId: customLinkId,
+    razorpayLinkId: linkResult.id,
+    amount,
+    status: "created",
+    contact,           // student mobile
+    lead_name: fullName,
+    lead_email: email,
+    createdAt: new Date()
+  }
+}
+  }
+);
 
     if (!updatedLead) {
       return res.status(404).json({ message: "Lead not found to update status" });
