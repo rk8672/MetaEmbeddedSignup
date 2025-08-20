@@ -1,25 +1,30 @@
+// models/RazorpayTransections/Transaction.js
 const mongoose = require("mongoose");
 
 const transactionSchema = new mongoose.Schema(
   {
-    event: { type: String, required: true },         // Razorpay event type
-    linkId: { type: String },                        // Custom link ID
-    razorpayLinkId: { type: String },                // Razorpay Link ID
-    paymentId: { type: String },                     // Razorpay Payment ID
-    orderId: { type: String },                       // Razorpay Order ID (if exists)
-
-    amount: { type: Number, required: true },        // in paise
+    linkId: { type: String, required: true }, // Your payment link / lead id
+    razorpayLinkId: { type: String },         // Actual Razorpay link ID
+    paymentId: { type: String },
+    orderId: { type: String },
+    amount: { type: Number },
     currency: { type: String, default: "INR" },
-    status: { type: String, required: true },        // created, authorized, captured, failed, refunded
-    method: { type: String },                        // upi, card, netbanking, etc.
-
-    // Student / customer details
-    name: { type: String },
-    email: { type: String },
-    contact: { type: String },
-
-    // Raw webhook data (for debugging/audit)
-    rawWebhook: { type: Object, required: true },
+    method: { type: String },
+    status: {
+      type: String,
+      enum: ["created", "authorized", "captured", "paid", "failed"],
+      default: "created",
+    },
+    customer: {
+      name: String,
+      email: String,
+      contact: String,
+    },
+    verified: {
+      captured: { type: Boolean, default: false },
+      paid: { type: Boolean, default: false }
+    },
+    rawWebhooks: [{ type: Object }], // Keep history of all webhooks
   },
   { timestamps: true }
 );
