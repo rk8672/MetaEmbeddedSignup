@@ -16,7 +16,7 @@ import LeadsTable from './components/LeadTable/LeadsTable';
 import UserManagement from './components/UserManagement/UserManagement';
 import Dashboard from './components/dashboard/dashboard';
 import CertificateGenerator from './components/certificate/CertificateGenerator';
-import RazorpayPayment from './components/comingsoon/RazorpayPayment';
+import TransactionTable from './components/transaction/transactionTable';
 import Reminder from './components/comingsoon/Reminder';
 import Certificate from './components/comingsoon/Certificate';
 
@@ -72,10 +72,10 @@ function App() {
         >
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/leads" element={<LeadsTable />} />
-            {/* <Route path="/certificate" element={<CertificateGenerator />} /> */}
-            <Route path="/certificate" element={<Certificate />} />
+            <Route path="/certificate" element={<CertificateGenerator />} />
+            {/* <Route path="/certificate" element={<Certificate />} /> */}
 
-              <Route path="/razorpay-payment" element={<RazorpayPayment />} />
+              <Route path="/razorpay-payment" element={<TransactionTable />} />
   <Route path="/reminder" element={<Reminder />} />
           <Route path="/settings" element={<UserManagement />} />
         </Route>

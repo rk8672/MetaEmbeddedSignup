@@ -3,9 +3,9 @@ import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import download from "downloadjs";
 import PageWrapper from "../../layouts/PageWrapper";
 const CertificateGenerator = () => {
-  const [name, setName] = useState("Mr. Radha Krishna Singh");
-  const [date, setDate] = useState("06-08-2025");
-  const [certificateNumber, setCertificateNumber] = useState("202508122882");
+  const [name, setName] = useState("");
+  const [date, setDate] = useState("");
+  const [certificateNumber, setCertificateNumber] = useState("");
 
   const generatePDF = async () => {
     // Load your background certificate PDF template

@@ -12,6 +12,8 @@ router.use("/user", userRoutes);
 const leadRoutes=require("../routes/Lead/leadRoutes");
 router.use("/leads", leadRoutes);
 
+const transactionRoutes = require("../routes/Transaction/transactionRoutes");
+router.use("/transactions", transactionRoutes);
 
 router.use(protect);
 
