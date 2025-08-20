@@ -1,6 +1,6 @@
 const razorpay = require("../config/razorpayConfig");
 
-const createPaymentLink = async ({ amount, customer }) => {
+const createPaymentLink = async ({ amount, customer, notes = {} }) => {
   try {
     const res = await razorpay.paymentLink.create({
       amount: amount * 100, // ₹500 → 50000 paise
@@ -16,11 +16,14 @@ const createPaymentLink = async ({ amount, customer }) => {
         email: true,
       },
       reminder_enable: true,
-      callback_url: "https://yourdomain.com/payment/callback",
-      callback_method: "get",
+      notes: notes,   // ✅ Add metadata here, will come back in webhook
+      // ❌ Removed callback_url and callback_method if relying on webhook
     });
 
-    return { success: true, paymentLink: res.short_url };
+    // ✅ Save res.id (payment_link_id) in DB with customer record
+    // Example: await Payment.create({ razorpayLinkId: res.id, shortUrl: res.short_url, status: "created", ... });
+
+    return { success: true, id: res.id, paymentLink: res.short_url };
   } catch (err) {
     console.error("Error creating payment link:", err);
     return { success: false, error: err };

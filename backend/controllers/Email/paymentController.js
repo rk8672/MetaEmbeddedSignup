@@ -14,7 +14,7 @@ exports.sendPaymentLink = async (req, res) => {
     // Generate a unique internal linkId for your lead
     const customLinkId = `lead_${Date.now()}`;
 
-    // Create Razorpay payment link with student info in notes
+    // ✅ Create Razorpay payment link with student info in notes
     const linkResult = await createPaymentLink({
       amount,
       customer: { name: fullName, email, contact },
@@ -30,11 +30,11 @@ exports.sendPaymentLink = async (req, res) => {
       return res.status(500).json({ message: "Failed to create payment link" });
     }
 
-    // Send email to student
+    // ✅ Send email with payment link
     const emailResult = await sendPaymentEmail({
       to: email,
       fullName,
-      link: linkResult.paymentLink,
+      link: linkResult.paymentLink, // Razorpay short_url
       amount
     });
 
@@ -42,18 +42,18 @@ exports.sendPaymentLink = async (req, res) => {
       return res.status(500).json({ message: "Payment link created, but email failed" });
     }
 
-    // Save payment link in MongoDB
+    // ✅ Save payment link in MongoDB with Razorpay ID
     const updatedLead = await Lead.findOneAndUpdate(
       { email },
       {
         $set: { status: "payment-link-sent" },
         $push: {
           paymentLinks: {
-            linkId: customLinkId,            // Internal ID
-            razorpayLinkId: linkResult.id,   // Razorpay ID
+            linkId: customLinkId,            // Internal ID for tracking
+            razorpayLinkId: linkResult.id,   // ✅ Razorpay Payment Link ID
             amount,
             status: "created",
-            contact,                         // student mobile
+            contact,
             lead_name: fullName,
             lead_email: email,
             createdAt: new Date()
@@ -69,7 +69,8 @@ exports.sendPaymentLink = async (req, res) => {
 
     return res.status(200).json({
       message: "Payment link sent and lead status updated successfully",
-      link: linkResult.paymentLink
+      razorpayLinkId: linkResult.id, // ✅ include Razorpay ID in response
+      link: linkResult.paymentLink   // ✅ short_url for student
     });
 
   } catch (err) {

@@ -24,7 +24,8 @@ router.post("/razorpay", async (req, res) => {
 
     const event = req.body.event;
 
-    if (!["payment.captured", "payment.failed"].includes(event)) {
+    // Only process payment events
+    if (!["payment_link.paid", "payment_link.partially_paid", "payment.failed", "payment.captured"].includes(event)) {
       console.log("ℹ️ Ignored non-payment event:", event);
       return res.status(200).send("Ignored event");
     }
@@ -32,19 +33,20 @@ router.post("/razorpay", async (req, res) => {
     console.log("✅ Razorpay Webhook Verified!");
     console.log("Event:", event);
 
-    const payment = req.body.payload.payment.entity;
+    const payment = req.body.payload.payment?.entity;  // comes in payment.captured
+    const paymentLink = req.body.payload.payment_link?.entity; // comes in payment_link.paid
 
-    // Fetch student info from Razorpay notes
     let studentInfo = {
-      name: payment.notes?.lead_name || "N/A",
-      email: payment.notes?.lead_email || "N/A",
-      contact: payment.notes?.lead_contact || "N/A"
+      name: payment?.notes?.lead_name || paymentLink?.notes?.lead_name || "N/A",
+      email: payment?.notes?.lead_email || paymentLink?.notes?.lead_email || "N/A",
+      contact: payment?.notes?.lead_contact || paymentLink?.notes?.lead_contact || "N/A"
     };
 
-    // Try fetching from MongoDB fallback using linkId or razorpayLinkId
-    const linkId = payment.notes?.link_id;
-    const razorpayLinkId = payment.payment_link_id;
+    // Get IDs
+    const linkId = payment?.notes?.link_id || paymentLink?.notes?.link_id;
+    const razorpayLinkId = payment?.payment_link_id || paymentLink?.id;
 
+    // Fallback → fetch from MongoDB if needed
     if (linkId || razorpayLinkId) {
       const lead = await Lead.findOne({
         $or: [
@@ -54,29 +56,28 @@ router.post("/razorpay", async (req, res) => {
       });
 
       if (lead) {
-        const paymentLink = lead.paymentLinks.find(p =>
+        const pl = lead.paymentLinks.find(p =>
           p.linkId === linkId || p.razorpayLinkId === razorpayLinkId
         );
 
         studentInfo = {
-          name: paymentLink?.lead_name || lead.fullName || "N/A",
-          email: paymentLink?.lead_email || lead.email || "N/A",
-          contact: paymentLink?.contact || lead.mobile || "N/A"
+          name: studentInfo.name !== "N/A" ? studentInfo.name : (pl?.lead_name || lead.fullName || "N/A"),
+          email: studentInfo.email !== "N/A" ? studentInfo.email : (pl?.lead_email || lead.email || "N/A"),
+          contact: studentInfo.contact !== "N/A" ? studentInfo.contact : (pl?.contact || lead.mobile || "N/A")
         };
       }
     }
 
-    // Log payment details
-    console.log("💰 Payment Details:");
-    console.log({
+    // ✅ Log correct payment details
+    console.log("💰 Payment Details:", {
       linkId: linkId || razorpayLinkId,
-      paymentId: payment.id,
-      amount: payment.amount / 100, // paise -> rupees
-      currency: payment.currency,
-      status: payment.status,
-      method: payment.method,
+      paymentId: payment?.id || "N/A",
+      amount: payment ? payment.amount / 100 : paymentLink?.amount / 100,
+      currency: payment?.currency || "INR",
+      status: payment?.status || paymentLink?.status,
+      method: payment?.method || "link",
       ...studentInfo,
-      created_at: payment.created_at
+      created_at: payment?.created_at || paymentLink?.created_at
     });
 
     res.status(200).send("OK");
