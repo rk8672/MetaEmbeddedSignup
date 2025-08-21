@@ -224,34 +224,46 @@ const columns = [
       </div>
     ),
   },
-  {
-    label: "Lead Info",
-    render: (lead) => (
-      <div className="text-sm leading-tight space-y-0.5">
-        <div className="font-semibold text-gray-800">{lead.fullName}</div>
-        <div className="text-gray-600 text-xs">{lead.email}</div>
-        <div className="text-gray-600 text-xs">{lead.mobile}</div>
-      </div>
-    ),
-  },
-   {
-    label: "Payment",
-    render: (lead) =>
-      Array.isArray(lead.payments) && lead.payments.length > 0 ? (
-        <div className="text-xs space-y-1">
-          {lead.payments.map((p) => (
-            <div key={p._id} className=" pb-1">
-              <div className="text-green-700 font-semibold">₹ {p.amount}</div>
-              {/* <div className="text-gray-500 text-[11px]">
-                {new Date(p.date).toLocaleDateString()}
-              </div> */}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <span className="text-xs text-red-600 font-medium">Not Paid</span>
-      ),
-  },
+{
+  label: "Name",
+  render: (lead) => (
+    <div className="text-sm font-semibold text-gray-800">
+      {lead.fullName}
+    </div>
+  ),
+},
+{
+  label: "Email",
+  render: (lead) => (
+    <div className="text-xs text-gray-600">
+      {lead.email}
+    </div>
+  ),
+},
+{
+  label: "Mobile",
+  render: (lead) => (
+    <div className="text-xs text-gray-600">
+      {lead.mobile}
+    </div>
+  ),
+},
+  //  {
+  //   label: "Payment",
+  //   render: (lead) =>
+  //     Array.isArray(lead.payments) && lead.payments.length > 0 ? (
+  //       <div className="text-xs space-y-1">
+  //         {lead.payments.map((p) => (
+  //           <div key={p._id} className=" pb-1">
+  //             <div className="text-green-700 font-semibold">₹ {p.amount}</div>
+             
+  //           </div>
+  //         ))}
+  //       </div>
+  //     ) : (
+  //       <span className="text-xs text-red-600 font-medium">Not Paid</span>
+  //     ),
+  // },
   {
     label: "Status",
     render: (lead) => (
@@ -263,7 +275,7 @@ const columns = [
         >
             {fieldLoading[`${lead._id}_status`] ? "Loading..." : lead.status} 
         </div>
-       <select
+       {/* <select
   value=""
   onChange={(e) => updateStatus(lead._id, e.target.value)}
   className="px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none text-xs"
@@ -276,7 +288,7 @@ const columns = [
       {status}
     </option>
   ))}
-</select>
+</select> */}
       </div>
     ),
   },
@@ -294,7 +306,7 @@ const columns = [
       </div>
 
       {/* Dropdown to update priority */}
-      <select
+      {/* <select
         value=""
         onChange={(e) => updatePriorityStatus(lead._id, e.target.value)}
         className="px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none text-xs"
@@ -307,92 +319,92 @@ const columns = [
             {priority}
           </option>
         ))}
-      </select>
+      </select> */}
     </div>
   ),
 },
-{
-  label: "Follow-up",
-  render: (lead) => (
-    <div className="flex flex-col gap-1 text-xs">
-      <button
-        onClick={() => {
-          setSelectedFollowUpLead(lead);
-          setIsFollowUpModalOpen(true);
-        }}
-        className="px-3 py-1.5 rounded bg-purple-600 text-white font-medium shadow-sm hover:bg-purple-700 transition duration-200"
-      >
-        Add
-      </button>
-      <button
-        onClick={() => {
-          setSelectedSeeFollowUpLead(lead);
-          setIsSeeFollowUpModalOpen(true);
-        }}
-        className="px-3 py-1.5 rounded bg-purple-100 text-purple-800 font-medium shadow-sm hover:bg-purple-200 transition duration-200"
-      >
-        View
-      </button>
-    </div>
-  ),
-},
-  {
-    label: "Payment",
-    render: (lead) => (
-      <div className="flex flex-col gap-1 text-xs">
-        <button
-          onClick={() => handleSendLink(lead)}
-          className="bg-blue-800 py-1.5 text-white px-2 py-1 rounded hover:bg-blue-900 transition"
-        >
-          Send Link
-        </button>
-        <button
-          onClick={() => handleAddPaymentClick(lead)}
-          className="bg-blue-200 py-1.5 text-blue-800 px-2 py-1 rounded hover:bg-blue-300 transition"
-        >
-          Add
-        </button>
-      </div>
-    ),
-  },
-  {
-    label: "Assign Staff",
-    render: (lead) => (
-      <div className="flex flex-col gap-1 text-xs">
-        <div
-          className={`rounded-md px-3 py-2 border ${
-            lead.assignedStaff?.name
-              ? "bg-gray-100 text-gray-800 border-gray-300"
-              : "bg-red-100 text-red-700 border-red-300"
-          }`}
-        >
-          {lead.assignedStaff?.name ? (
-            <>
-              <span className="font-semibold">{lead.assignedStaff.name}</span>
-              <br />
-              <span className="text-[10px]">{lead.assignedStaff.email}</span>
-            </>
-          ) : (
-            <span className="italic">Not Assigned</span>
-          )}
-        </div>
-        {user.role === "admin" && (
-          <select
-            value={lead.assignedTo || ""}
-            onChange={(e) => assignStaff(lead._id, e.target.value)}
-            className="px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none text-xs bg-white"
-          >
-            <option value="">-- Select Staff --</option>
-            {staffList.map((staff) => (
-              <option key={staff._id} value={staff._id}>
-                {staff.name}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
-    ),
-  },
+// {
+//   label: "Follow-up",
+//   render: (lead) => (
+//     <div className="flex flex-col gap-1 text-xs">
+//       <button
+//         onClick={() => {
+//           setSelectedFollowUpLead(lead);
+//           setIsFollowUpModalOpen(true);
+//         }}
+//         className="px-3 py-1.5 rounded bg-purple-600 text-white font-medium shadow-sm hover:bg-purple-700 transition duration-200"
+//       >
+//         Add
+//       </button>
+//       <button
+//         onClick={() => {
+//           setSelectedSeeFollowUpLead(lead);
+//           setIsSeeFollowUpModalOpen(true);
+//         }}
+//         className="px-3 py-1.5 rounded bg-purple-100 text-purple-800 font-medium shadow-sm hover:bg-purple-200 transition duration-200"
+//       >
+//         View
+//       </button>
+//     </div>
+//   ),
+// },
+  // {
+  //   label: "Payment",
+  //   render: (lead) => (
+  //     <div className="flex flex-col gap-1 text-xs">
+  //       <button
+  //         onClick={() => handleSendLink(lead)}
+  //         className="bg-blue-800 py-1.5 text-white px-2 py-1 rounded hover:bg-blue-900 transition"
+  //       >
+  //         Send Link
+  //       </button>
+  //       <button
+  //         onClick={() => handleAddPaymentClick(lead)}
+  //         className="bg-blue-200 py-1.5 text-blue-800 px-2 py-1 rounded hover:bg-blue-300 transition"
+  //       >
+  //         Add
+  //       </button>
+  //     </div>
+  //   ),
+  // },
+  // {
+  //   label: "Assign Staff",
+  //   render: (lead) => (
+  //     <div className="flex flex-col gap-1 text-xs">
+  //       <div
+  //         className={`rounded-md px-3 py-2 border ${
+  //           lead.assignedStaff?.name
+  //             ? "bg-gray-100 text-gray-800 border-gray-300"
+  //             : "bg-red-100 text-red-700 border-red-300"
+  //         }`}
+  //       >
+  //         {lead.assignedStaff?.name ? (
+  //           <>
+  //             <span className="font-semibold">{lead.assignedStaff.name}</span>
+  //             <br />
+  //             <span className="text-[10px]">{lead.assignedStaff.email}</span>
+  //           </>
+  //         ) : (
+  //           <span className="italic">Not Assigned</span>
+  //         )}
+  //       </div>
+  //       {user.role === "admin" && (
+  //         <select
+  //           value={lead.assignedTo || ""}
+  //           onChange={(e) => assignStaff(lead._id, e.target.value)}
+  //           className="px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none text-xs bg-white"
+  //         >
+  //           <option value="">-- Select Staff --</option>
+  //           {staffList.map((staff) => (
+  //             <option key={staff._id} value={staff._id}>
+  //               {staff.name}
+  //             </option>
+  //           ))}
+  //         </select>
+  //       )}
+  //     </div>
+  //   ),
+  // },
 ];
 
 
@@ -440,13 +452,240 @@ const columns = [
           <div className="p-8 text-center text-gray-500">Loading leads...</div>
         ) : (
           <>
-            <TableWrapper
-              // title="Leads Management"
-              description={`Showing page ${page} of ${totalPages}`}
-                title=""
-              columns={columns}
-              data={leads}
-            />
+           <TableWrapper
+  title=""
+  description={`Showing page ${page} of ${totalPages}`}
+  columns={columns}
+  data={leads}
+  expandable={true}
+renderExpanded={(lead) => (
+  <div className="p-6 bg-gray-50 rounded-lg border space-y-8 text-sm">
+{/* Lead Overview (Status + Priority + Staff compact) */}
+<section className="">
+  <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">
+    Lead Overview
+  </h3>
+
+  <div className="grid grid-cols-2 gap-4 text-sm">
+    {/* Left Column: Lead Info */}
+    <div className="space-y-2">
+      <p><span className="font-medium">Name:</span> {lead.fullName}</p>
+      <p><span className="font-medium">Email:</span> {lead.email}</p>
+      <p><span className="font-medium">Mobile:</span> {lead.mobile}</p>
+    </div>
+{/* Right Column: Status + Priority + Staff (stacked in columns) */}
+<div className="grid grid-cols-3 gap-4 text-sm">
+  {/* Status */}
+  <div>
+    <span className="font-medium block mb-1">Status</span>
+    <div
+      className={`px-2 py-1 rounded font-semibold capitalize text-center mb-2 ${
+        statusColors[lead.status] || "bg-gray-100 text-gray-600"
+      }`}
+    >
+      {fieldLoading[`${lead._id}_status`] ? "Loading..." : lead.status}
+    </div>
+    <select
+      value=""
+      onChange={(e) => updateStatus(lead._id, e.target.value)}
+      className="w-full px-2 py-1 border border-gray-300 rounded-md text-xs bg-white"
+    >
+      <option value="" disabled hidden>Change</option>
+      {Object.keys(statusColors).map((status) => (
+        <option key={status} value={status}>{status}</option>
+      ))}
+    </select>
+  </div>
+
+  {/* Priority */}
+  <div>
+    <span className="font-medium block mb-1">Priority</span>
+    <div
+      className={`px-2 py-1 rounded font-semibold capitalize text-center mb-2 ${
+        priorityColors[lead.priorityStatus] || "bg-gray-100 text-gray-600"
+      }`}
+    >
+      {fieldLoading[`${lead._id}_priority`]
+        ? "Loading..."
+        : lead.priorityStatus || "Not Set"}
+    </div>
+    <select
+      value=""
+      onChange={(e) => updatePriorityStatus(lead._id, e.target.value)}
+      className="w-full px-2 py-1 border border-gray-300 rounded-md text-xs bg-white"
+    >
+      <option value="" disabled hidden>Change</option>
+      {Object.keys(priorityColors).map((priority) => (
+        <option key={priority} value={priority}>{priority}</option>
+      ))}
+    </select>
+  </div>
+
+  {/* Assigned Staff */}
+  <div>
+    <span className="font-medium block mb-1">Staff</span>
+    <div
+      className={`px-2 py-1 rounded font-semibold text-center mb-2 ${
+        lead.assignedStaff?.name
+          ? "bg-gray-100 text-gray-800 border border-gray-300"
+          : "bg-red-100 text-red-700 border border-red-300"
+      }`}
+    >
+      {lead.assignedStaff?.name || "Not Assigned"}
+    </div>
+    {user.role === "admin" && (
+      <select
+        value={lead.assignedTo || ""}
+        onChange={(e) => assignStaff(lead._id, e.target.value)}
+        className="w-full px-2 py-1 border border-gray-300 rounded-md text-xs bg-white"
+      >
+        <option value="">-- Select --</option>
+        {staffList.map((staff) => (
+          <option key={staff._id} value={staff._id}>
+            {staff.name}
+          </option>
+        ))}
+      </select>
+    )}
+  </div>
+</div>
+
+  </div>
+</section>
+
+
+    {/* Payments */}
+    <section>
+      <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b pb-1">
+        Received Payments
+      </h3>
+      {Array.isArray(lead.payments) && lead.payments.length > 0 ? (
+        <table className="w-full text-left border border-gray-200 text-xs rounded">
+          <thead className="bg-gray-100 text-gray-700">
+            <tr>
+              <th className="px-2 py-1 border">Txn ID</th>
+              <th className="px-2 py-1 border">Amount</th>
+              <th className="px-2 py-1 border">Date</th>
+              <th className="px-2 py-1 border">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {lead.payments.map((p) => (
+              <tr key={p._id} className="hover:bg-gray-50">
+                <td className="px-2 py-1 border">{p.transactionId}</td>
+                <td className="px-2 py-1 border font-medium text-green-700">₹ {p.amount}</td>
+                <td className="px-2 py-1 border">{new Date(p.date).toLocaleDateString()}</td>
+                <td className="px-2 py-1 border">{p.notes}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p className="text-red-600 italic">No payments received</p>
+      )}
+    </section>
+
+    {/* Payment Links */}
+    <section>
+      <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b pb-1">
+        Payment Links
+      </h3>
+      {Array.isArray(lead.paymentLinks) && lead.paymentLinks.length > 0 ? (
+        <table className="w-full text-left border border-gray-200 text-xs rounded">
+          <thead className="bg-gray-100 text-gray-700">
+            <tr>
+              <th className="px-2 py-1 border">Link ID</th>
+              <th className="px-2 py-1 border">Razorpay Link</th>
+              <th className="px-2 py-1 border">Amount</th>
+              <th className="px-2 py-1 border">Status</th>
+              <th className="px-2 py-1 border">Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            {lead.paymentLinks.map((pl) => (
+              <tr key={pl._id} className="hover:bg-gray-50">
+                <td className="px-2 py-1 border">{pl.linkId}</td>
+                <td className="px-2 py-1 border text-blue-600">{pl.razorpayLinkId || "-"}</td>
+                <td className="px-2 py-1 border">₹ {pl.amount}</td>
+                <td className="px-2 py-1 border capitalize">{pl.status}</td>
+                <td className="px-2 py-1 border">{new Date(pl.createdAt).toLocaleDateString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p className="text-gray-600 italic">No payment links created</p>
+      )}
+      <div className="flex gap-2 mt-3">
+        <button
+          onClick={() => handleSendLink(lead)}
+          className="bg-blue-800 text-white px-3 py-1.5 rounded hover:bg-blue-900"
+        >
+          Send Link
+        </button>
+        <button
+          onClick={() => handleAddPaymentClick(lead)}
+          className="bg-blue-200 text-blue-800 px-3 py-1.5 rounded hover:bg-blue-300"
+        >
+          Add Payment
+        </button>
+      </div>
+    </section>
+
+   
+
+ {/* Follow-ups */}
+<section>
+  <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b pb-1">
+    Follow-ups
+  </h3>
+
+  {/* Buttons */}
+  <div className="flex gap-2 mb-3">
+    <button
+      onClick={() => {
+        setSelectedFollowUpLead(lead);
+        setIsFollowUpModalOpen(true);
+      }}
+      className="px-3 py-1.5 rounded bg-purple-600 text-white shadow-sm hover:bg-purple-700"
+    >
+      Add Follow-up
+    </button>
+  </div>
+
+  {/* Follow-up List */}
+  <div className="space-y-3">
+    {lead.followUps && lead.followUps.length > 0 ? (
+      lead.followUps.map((fup) => (
+        <div
+          key={fup._id}
+          className="p-3 rounded-lg border border-gray-200 shadow-sm bg-white"
+        >
+          <p className="text-sm text-gray-700">
+            <span className="font-medium">Date:</span>{" "}
+            {new Date(fup.date).toLocaleString()}
+          </p>
+          <p className="text-sm text-gray-700">
+            <span className="font-medium">Note:</span> {fup.note}
+          </p>
+        </div>
+      ))
+    ) : (
+      <p className="italic text-gray-500">No follow-up added</p>
+    )}
+  </div>
+</section>
+
+
+ 
+  </div>
+)}
+
+
+/>
+
+
+
             {renderPagination()}
           </>
         )}

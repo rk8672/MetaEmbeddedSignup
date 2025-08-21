@@ -54,7 +54,7 @@ status: {
     amount: Number,
     status: {
       type: String,
-      enum: ["created", "paid", "expired"],
+      enum: ["created", "paid", "failed","expired"],
       default: "created"
     },
     contact: { type: String },   // Add this to store student mobile/contact

@@ -1,8 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
 
-const TableWrapper = ({ title, description, columns = [], data = [], actions }) => {
+const TableWrapper = ({
+  title,
+  description,
+  columns = [],
+  data = [],
+  actions,
+  /** expansion options */
+  expandable = false,                 // turn ON/OFF expand feature
+  expandColumnTitle = "View",         // header title for the button column
+  renderExpanded,                     // (row) => ReactNode
+  getRowId = (row) => row._id || row.id, // how to read a row id
+}) => {
+  const [expandedRowId, setExpandedRowId] = useState(null);
+
+  const toggleRow = (rowId) => {
+    setExpandedRowId((prev) => (prev === rowId ? null : rowId));
+  };
+
+  const totalCols = columns.length + (expandable ? 1 : 0);
+
   return (
-    <div className="rounded-3xl border border-gray-100  shadow-sm overflow-hidden bg-white transition-all duration-300">
+    <div className="rounded-3xl border border-gray-100 shadow-sm overflow-hidden bg-white transition-all duration-300">
       {(title || description || actions) && (
         <div className="px-6 py-4 border-b bg-gray-50 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
           <div>
@@ -22,31 +41,65 @@ const TableWrapper = ({ title, description, columns = [], data = [], actions }) 
                   {col.label}
                 </th>
               ))}
+              {expandable && (
+                <th className="px-6 py-3 whitespace-nowrap font-medium tracking-wide text-left">
+                  {expandColumnTitle}
+                </th>
+              )}
             </tr>
           </thead>
+
           <tbody className="divide-y divide-gray-100">
             {data.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-6 py-6 text-center text-gray-400 text-sm">
+                <td colSpan={totalCols} className="px-6 py-6 text-center text-gray-400 text-sm">
                   No data available
                 </td>
               </tr>
             ) : (
-              data.map((item,index) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-blue-50/30 transition-colors duration-200"
-                >
-                 
-                  {columns.map((col, colIndex) => (
-                    <td key={colIndex} className="px-6 py-4 whitespace-nowrap text-gray-800">
-                      {typeof col.render === "function"
-                        ? col.render(item,index)
-                        : item[col.key]}
-                    </td>
-                  ))}
-                </tr>
-              ))
+              data.map((item, index) => {
+                const rowId = getRowId(item);
+                const isOpen = expandedRowId === rowId;
+
+                return (
+                  <React.Fragment key={rowId}>
+                    <tr className="hover:bg-blue-50/30 transition-colors duration-200">
+                      {columns.map((col, colIndex) => (
+                        <td key={colIndex} className="px-6 py-4 whitespace-nowrap text-gray-800">
+                          {typeof col.render === "function" ? col.render(item, index) : item[col.key]}
+                        </td>
+                      ))}
+
+                      {expandable && (
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => toggleRow(rowId)}
+                            className={`px-3 py-1.5 rounded text-xs font-medium border transition
+                              ${isOpen ? "bg-gray-200 text-gray-800 border-gray-300"
+                                       : "bg-blue-600 text-white border-blue-700 hover:bg-blue-700"}`}
+                          >
+                            {isOpen ? "Close" : "View"}
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+
+                    {expandable && isOpen && (
+                      <tr key={`${rowId}-expanded`} className="bg-blue-50/20">
+                        <td colSpan={totalCols} className="px-6 py-4">
+                          {typeof renderExpanded === "function" ? (
+                            renderExpanded(item)
+                          ) : (
+                            <div className="text-sm text-gray-700">
+                              This is expended section
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })
             )}
           </tbody>
         </table>

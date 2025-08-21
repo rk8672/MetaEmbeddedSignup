@@ -115,6 +115,23 @@ router.post("/razorpay", async (req, res) => {
         lead.payments.push(paymentDoc._id);
       }
 
+
+  // ✅ Update paymentLink status
+  let linkIndex = lead.paymentLinks.findIndex(
+    (pl) =>
+      (linkId && pl.linkId === linkId) ||
+      (razorpayLinkId && pl.razorpayLinkId === razorpayLinkId)
+  );
+
+  if (linkIndex !== -1) {
+    if (txn.status === "paid" || txn.status === "captured") {
+      lead.paymentLinks[linkIndex].status = "paid";
+    } else if (txn.status === "failed") {
+      lead.paymentLinks[linkIndex].status = "failed";
+    }
+  }
+
+
       // update status
       if (lead.status !== "payment-done") {
         lead.status = "payment-done";

@@ -317,44 +317,53 @@ exports.assignStaffToLead = async (req, res) => {
 };
 
 
+
+
 exports.getDashboardOverview = async (req, res) => {
   try {
     const [leadCounts, totalStaff] = await Promise.all([
-      // Group leads by status
+      // Normalize legacy/messy values -> group
       Lead.aggregate([
+        { $project: { status: { $ifNull: ["$status", "new"] } } },
+        // lowercase & replace spaces with hyphens: "In Contact" -> "in-contact"
+        { $addFields: { s: { $toLower: "$status" } } },
+        { $addFields: { s: { $replaceAll: { input: "$s", find: " ", replacement: "-" } } } },
+        // map legacy values to new enum
         {
-          $group: {
-            _id: "$status",
-            count: { $sum: 1 },
+          $addFields: {
+            s: {
+              $switch: {
+                branches: [
+                  { case: { $in: ["$s", ["assigned", "mentor-assigned"]] }, then: "mentor-assigned" },
+                  { case: { $in: ["$s", ["in-contact", "mentor-in-contact"]] }, then: "mentor-in-contact" },
+                  // if you had an old "follow-up" state, bucket it as in-contact
+                  { case: { $eq: ["$s", "follow-up"] }, then: "mentor-in-contact" },
+                  { case: { $in: ["$s", ["payment-sent", "payment-link-sent"]] }, then: "payment-link-sent" },
+                  { case: { $in: ["$s", ["payment-done", "paid"]] }, then: "payment-done" },
+                  { case: { $eq: ["$s", "enrolled"] }, then: "enrolled" },
+                  { case: { $eq: ["$s", "not-interested"] }, then: "not-interested" },
+                  { case: { $eq: ["$s", "new"] }, then: "new" },
+                ],
+                default: "new",
+              },
+            },
           },
         },
+        { $group: { _id: "$s", count: { $sum: 1 } } },
       ]),
 
-      // Count staff
       User.countDocuments({ role: "staff" }),
     ]);
 
-    // Total leads
-    const totalLeads = leadCounts.reduce((acc, curr) => acc + curr.count, 0);
+    const totalLeads = leadCounts.reduce((a, c) => a + c.count, 0);
 
-    // Initialize all statuses with 0
-    const statusBreakdown = STATUS_LIST.reduce((obj, status) => {
-      obj[status] = 0;
-      return obj;
-    }, {});
+    // Fill all 7 statuses, default 0
+    const statusBreakdown = STATUS_LIST.reduce((acc, k) => ((acc[k] = 0), acc), {});
+    for (const { _id, count } of leadCounts) {
+      if (_id in statusBreakdown) statusBreakdown[_id] = count;
+    }
 
-    // Update with actual counts
-    leadCounts.forEach((item) => {
-      if (statusBreakdown.hasOwnProperty(item._id)) {
-        statusBreakdown[item._id] = item.count;
-      }
-    });
-
-    res.status(200).json({
-      totalLeads,
-      totalStaff,
-      statusBreakdown,
-    });
+    res.status(200).json({ totalLeads, totalStaff, statusBreakdown });
   } catch (err) {
     console.error("Dashboard Error:", err);
     res.status(500).json({ message: "Failed to fetch dashboard data" });
