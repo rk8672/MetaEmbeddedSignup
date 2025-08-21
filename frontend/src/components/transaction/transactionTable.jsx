@@ -115,23 +115,7 @@ const TransactionTable = () => {
     </div>
   );
 
-  // Filters
-  const renderFilters = () => (
-    <div className="flex flex-wrap items-center gap-4 mb-4">
-      <select
-        value={statusFilter}
-        onChange={(e) => setStatusFilter(e.target.value)}
-        className="px-4 py-2 border rounded-md shadow-sm focus:outline-none"
-      >
-        <option value="">All Status</option>
-        {Object.keys(statusColors).map((status) => (
-          <option key={status} value={status}>
-            {status}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
+
 
   return (
     <PageWrapper title="Transactions" subtitle="Manage all Razorpay transactions" >

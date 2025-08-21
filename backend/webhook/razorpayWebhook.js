@@ -26,8 +26,14 @@ router.post("/razorpay", async (req, res) => {
 
     const event = req.body.event;
 
-    // Process only relevant events
-    if (!["payment_link.paid", "payment_link.partially_paid", "payment.captured", "payment.failed"].includes(event)) {
+    if (
+      ![
+        "payment_link.paid",
+        "payment_link.partially_paid",
+        "payment.captured",
+        "payment.failed",
+      ].includes(event)
+    ) {
       console.log("ℹ️ Ignored non-payment event:", event);
       return res.status(200).send("Ignored event");
     }
@@ -35,41 +41,28 @@ router.post("/razorpay", async (req, res) => {
     console.log("✅ Razorpay Webhook Verified!");
     console.log("Event:", event);
 
-    const payment = req.body.payload.payment?.entity;      // payment.captured, failed
-    const paymentLink = req.body.payload.payment_link?.entity; // payment_link.paid, partially_paid
+    const payment = req.body.payload.payment?.entity;
+    const paymentLink = req.body.payload.payment_link?.entity;
 
-    // Extract IDs
     const linkId = payment?.notes?.link_id || paymentLink?.notes?.link_id || null;
     const razorpayLinkId = payment?.payment_link_id || paymentLink?.id || null;
     const paymentId = payment?.id || null;
 
-    // Extract customer info
     let studentInfo = {
       name: payment?.notes?.lead_name || paymentLink?.notes?.lead_name || null,
       email: payment?.notes?.lead_email || paymentLink?.notes?.lead_email || null,
       contact: payment?.notes?.lead_contact || paymentLink?.notes?.lead_contact || null,
     };
 
-    // Fallback → fetch student details from Lead collection
+    // 🎯 Find the Lead
+    let lead = null;
     if (linkId || razorpayLinkId) {
-      const lead = await Lead.findOne({
+      lead = await Lead.findOne({
         $or: [
           { "paymentLinks.linkId": linkId },
           { "paymentLinks.razorpayLinkId": razorpayLinkId },
         ],
       });
-
-      if (lead) {
-        const pl = lead.paymentLinks.find(
-          (p) => p.linkId === linkId || p.razorpayLinkId === razorpayLinkId
-        );
-
-        studentInfo = {
-          name: studentInfo.name || pl?.lead_name || lead.fullName,
-          email: studentInfo.email || pl?.lead_email || lead.email,
-          contact: studentInfo.contact || pl?.contact || lead.mobile,
-        };
-      }
     }
 
     // 🔄 Find existing transaction or create new
@@ -81,13 +74,11 @@ router.post("/razorpay", async (req, res) => {
       txn = new Transaction({ linkId, razorpayLinkId, paymentId });
     }
 
-    // Update important fields
     txn.amount = payment ? payment.amount / 100 : paymentLink?.amount / 100;
     txn.currency = payment?.currency || paymentLink?.currency || "INR";
     txn.method = payment?.method || txn.method;
     txn.customer = studentInfo;
 
-    // Update status and verification flags
     if (event === "payment.captured") {
       txn.status = "captured";
       txn.verified.captured = true;
@@ -98,10 +89,22 @@ router.post("/razorpay", async (req, res) => {
       txn.status = "failed";
     }
 
-    // Push raw webhook to history
     txn.rawWebhooks.push(req.body);
-
     await txn.save();
+
+    // 🆕 Link Transaction to Lead
+    if (lead && txn.status !== "failed") {
+      if (!lead.payments.includes(txn._id)) {
+        lead.payments.push(txn._id);
+      }
+      // update status
+      if (lead.status !== "payment-done") {
+        lead.status = "payment-done";
+      }
+      await lead.save();
+
+      console.log(`📌 Lead updated: ${lead.fullName} → payment recorded`);
+    }
 
     console.log("💰 Transaction Updated:", txn.paymentId, txn.status);
 
