@@ -3,6 +3,7 @@ const express = require("express");
 const crypto = require("crypto");
 const Lead = require("../models/Lead/leadModel");
 const Transaction = require("../models/RazorpayTransections/Transaction");
+const Payment = require("../models/RecivedPayment/Payment"); // ✅ add payment model
 
 require("dotenv").config();
 const router = express.Router();
@@ -92,7 +93,7 @@ router.post("/razorpay", async (req, res) => {
     txn.rawWebhooks.push(req.body);
     await txn.save();
 
-    // 🆕 Link Transaction to Lead
+    // 🆕 Link Transaction to Lead & also create Payment record
     if (lead && txn.status !== "failed") {
       if (!lead.payments.includes(txn._id)) {
         lead.payments.push(txn._id);
@@ -104,6 +105,21 @@ router.post("/razorpay", async (req, res) => {
       await lead.save();
 
       console.log(`📌 Lead updated: ${lead.fullName} → payment recorded`);
+
+      // ✅ Create Payment record if not already created
+      const existingPayment = await Payment.findOne({ transactionId: txn.paymentId });
+      if (!existingPayment) {
+        const newPayment = new Payment({
+          transactionId: txn.paymentId,
+          lead: lead._id,
+          amount: txn.amount,
+          method: txn.method || "razorpay",
+          date: new Date(),
+          notes: `Webhook auto-recorded payment via Razorpay (${txn.status})`,
+        });
+        await newPayment.save();
+        console.log("💾 Payment model record created:", newPayment._id);
+      }
     }
 
     console.log("💰 Transaction Updated:", txn.paymentId, txn.status);
