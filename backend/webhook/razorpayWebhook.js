@@ -3,7 +3,7 @@ const express = require("express");
 const crypto = require("crypto");
 const Lead = require("../models/Lead/leadModel");
 const Transaction = require("../models/RazorpayTransections/Transaction");
-const Payment = require("../models/RecivedPayment/Payment"); // ✅ add payment model
+const Payment = require("../models/RecivedPayment/Payment");
 
 require("dotenv").config();
 const router = express.Router();
@@ -95,21 +95,10 @@ router.post("/razorpay", async (req, res) => {
 
     // 🆕 Link Transaction to Lead & also create Payment record
     if (lead && txn.status !== "failed") {
-      if (!lead.payments.includes(txn._id)) {
-        lead.payments.push(txn._id);
-      }
-      // update status
-      if (lead.status !== "payment-done") {
-        lead.status = "payment-done";
-      }
-      await lead.save();
-
-      console.log(`📌 Lead updated: ${lead.fullName} → payment recorded`);
-
-      // ✅ Create Payment record if not already created
-      const existingPayment = await Payment.findOne({ transactionId: txn.paymentId });
-      if (!existingPayment) {
-        const newPayment = new Payment({
+      // ✅ Check if Payment already exists
+      let paymentDoc = await Payment.findOne({ transactionId: txn.paymentId });
+      if (!paymentDoc) {
+        paymentDoc = new Payment({
           transactionId: txn.paymentId,
           lead: lead._id,
           amount: txn.amount,
@@ -117,9 +106,23 @@ router.post("/razorpay", async (req, res) => {
           date: new Date(),
           notes: `Webhook auto-recorded payment via Razorpay (${txn.status})`,
         });
-        await newPayment.save();
-        console.log("💾 Payment model record created:", newPayment._id);
+        await paymentDoc.save();
+        console.log("💾 Payment model record created:", paymentDoc._id);
       }
+
+      // ✅ Push Payment._id into Lead (not Transaction._id)
+      if (!lead.payments.includes(paymentDoc._id)) {
+        lead.payments.push(paymentDoc._id);
+      }
+
+      // update status
+      if (lead.status !== "payment-done") {
+        lead.status = "payment-done";
+      }
+
+      await lead.save();
+
+      console.log(`📌 Lead updated: ${lead.fullName} → payment recorded`);
     }
 
     console.log("💰 Transaction Updated:", txn.paymentId, txn.status);

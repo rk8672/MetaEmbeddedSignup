@@ -137,7 +137,7 @@ exports.getAllLeads = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .populate("assignedStaff", "name email")
-      .populate("payments", "transactionId amount date notes");
+     .populate("payments", "transactionId amount date notes")
 
     const formattedLeads = leads.map((lead) => ({
       ...lead.toObject(),
