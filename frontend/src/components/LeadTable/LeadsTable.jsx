@@ -8,6 +8,17 @@ import AddPaymentModal from "../ModelBox/AddPaymentModal";
 import AddFollowUpModal from "../ModelBox/AddFollowUpModal";
 import SeeFollowUpModal from "../ModelBox/SeeFollowUpModal";
 import { useSelector } from "react-redux";
+import {
+  Users,
+  ClipboardList,
+  Loader2,
+  UserPlus,
+  PhoneCall,
+  Clock,
+  Link,
+  CheckCircle2,
+  ThumbsDown,
+} from "lucide-react";
 const statusColors = {
   "new": "bg-gray-100 text-gray-800",               // Just registered (form submitted)
   "mentor-assigned": "bg-purple-100 text-purple-800",    // Mentor/executive assigned
@@ -16,6 +27,43 @@ const statusColors = {
   "payment-done": "bg-blue-100 text-blue-800",           // Payment received
   "enrolled": "bg-green-100 text-green-800",             // Enrollment confirmed
   "not-interested": "bg-red-100 text-red-800",           // Rejected or unresponsive
+};
+const statusMeta = { 
+  "new": {
+    label: "New",
+    color: "bg-gray-100 text-gray-800",
+    icon: <UserPlus className="w-5 h-5 text-gray-800" />,
+  },
+  "mentor-assigned": {
+    label: "Assigned",
+    color: "bg-purple-100 text-purple-800",
+    icon: <ClipboardList className="w-5 h-5 text-purple-800" />,
+  },
+  "mentor-in-contact": {
+    label: "In Contact",
+    color: "bg-yellow-100 text-yellow-800",
+    icon: <PhoneCall className="w-5 h-5 text-yellow-800" />,
+  },
+  "payment-link-sent": {
+    label: "Payment Sent",
+    color: "bg-indigo-100 text-indigo-800",
+    icon: <Link className="w-5 h-5 text-indigo-800" />,
+  },
+  "payment-done": {
+    label: "Paid",
+    color: "bg-blue-100 text-blue-800",
+    icon: <CheckCircle2 className="w-5 h-5 text-blue-800" />,
+  },
+  "enrolled": {
+    label: "Enrolled",
+    color: "bg-green-100 text-green-800",
+    icon: <CheckCircle2 className="w-5 h-5 text-green-800" />,
+  },
+  "not-interested": {
+    label: "Not Interested",
+    color: "bg-red-100 text-red-800",
+    icon: <ThumbsDown className="w-5 h-5 text-red-800" />,
+  },
 };
 const priorityColors = {
   hot: "bg-red-100 text-red-700",
@@ -428,20 +476,45 @@ const columns = [
     </div>
   );
 
-  const renderFilters = () => (
-    <div className="flex flex-wrap items-center gap-4 mb-4">
-      <select
-        value={statusFilter}
-        onChange={(e) => setStatusFilter(e.target.value)}
-        className="px-4 py-2 border rounded-md shadow-sm focus:outline-none"
-      >
-        <option value="">All Status</option>
-        {Object.keys(statusColors).map((status) => (
-          <option key={status} value={status}>{status}</option>
-        ))}
-      </select>
+
+const renderFilters = () => (
+  <div className="flex flex-wrap items-center gap-3 mb-4">
+    {/* "All Status" card */}
+    <div
+      onClick={() => setStatusFilter("")}
+      className={`cursor-pointer rounded-lg px-3 py-2 flex items-center gap-2 font-medium transition-all duration-200
+        ${
+          statusFilter === ""
+            ? "bg-blue-600 text-white shadow-lg scale-105 border-blue-700"
+            : "bg-white text-gray-700 border border-gray-200 hover:shadow hover:scale-105"
+        }`}
+    >
+      <Users className={`w-5 h-5 ${statusFilter === "" ? "text-white" : "text-blue-600"}`} />
+      <span>All</span>
     </div>
-  );
+
+    {/* Individual status cards */}
+    {Object.keys(statusMeta).map((status) => {
+      const meta = statusMeta[status];
+      const isActive = statusFilter === status;
+
+      return (
+        <div
+          key={status}
+          onClick={() => setStatusFilter(status)}
+          className={`cursor-pointer rounded-lg px-3 py-2 flex items-center gap-2 font-medium transition-all duration-200
+            ${isActive
+              ? "bg-indigo-600 text-white shadow-lg scale-105 border-indigo-700"
+              : `${meta.color} hover:shadow hover:scale-105`
+            }`}
+        >
+          {React.cloneElement(meta.icon, { className: `${isActive ? "text-white" : meta.icon.props.className}` })}
+          <span>{meta.label}</span>
+        </div>
+      );
+    })}
+  </div>
+);
 
   return (
     // <PageWrapper title="Leads Management" subtitle="Manage and update student leads here">

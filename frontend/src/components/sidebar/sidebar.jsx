@@ -3,15 +3,17 @@ import { logout } from "../../slices/authSlice";
 import {  Home, Users, Settings, Award, DollarSign, Bell ,LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import BrandLogo from "../../assets/BrandLogo/Logo_only.gif";
+const RupeeIcon = () => <span className="text-lg font-bold">₹</span>;
 import "./sidebar.css";
 
 
 
 const allMenuItems = [
-  { name: "Dashboard", icon: Home, path: "/Dashboard", roles: ["admin"] },
+  { name: "", icon: Home, path: "/Dashboard", roles: ["admin"] },
   { name: "Leads", icon: Users, path: "/leads", roles: ["admin", "staff"] },
+  { name: "RazorpayPayment", icon: RupeeIcon, path: "/razorpay-payment", roles: ["admin", "staff"] },
+ 
   { name: "Certificate", icon: Award, path: "/certificate", roles: ["admin", "staff"] },
-  { name: "RazorpayPayment", icon: DollarSign, path: "/razorpay-payment", roles: ["admin", "staff"] },
   { name: "Reminder", icon: Bell, path: "/reminder", roles: ["admin", "staff"] },
   { name: "Settings", icon: Settings, path: "/settings", roles: ["admin"] },
 ];

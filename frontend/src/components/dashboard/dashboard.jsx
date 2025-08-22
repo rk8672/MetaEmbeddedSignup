@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"; 
 import PageWrapper from "../../layouts/PageWrapper";
 import axiosInstance from "../../utils/axiosInstance";
 import {
@@ -13,26 +13,27 @@ import {
   ThumbsDown,
 } from "lucide-react";
 
+// Map backend statuses to professional colors and icons
 const statusMeta = {
   "new": {
     color: "bg-gray-100 text-gray-800",
     icon: <UserPlus className="w-8 h-8 text-gray-800" />,
   },
-  "assigned": {
+  "mentor-assigned": {
     color: "bg-purple-100 text-purple-800",
     icon: <ClipboardList className="w-8 h-8 text-purple-800" />,
   },
-  "in-contact": {
+  "mentor-in-contact": {
     color: "bg-yellow-100 text-yellow-800",
     icon: <PhoneCall className="w-8 h-8 text-yellow-800" />,
   },
-  "follow-up": {
-    color: "bg-blue-100 text-blue-800",
-    icon: <Clock className="w-8 h-8 text-blue-800" />,
-  },
-  "payment-sent": {
+  "payment-link-sent": {
     color: "bg-indigo-100 text-indigo-800",
     icon: <Link className="w-8 h-8 text-indigo-800" />,
+  },
+  "payment-done": {
+    color: "bg-blue-100 text-blue-800",
+    icon: <CheckCircle2 className="w-8 h-8 text-blue-800" />,
   },
   "enrolled": {
     color: "bg-green-100 text-green-800",
@@ -75,7 +76,6 @@ const Dashboard = () => {
 
   return (
     <PageWrapper title="Admin Dashboard">
-
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <DashboardCard
@@ -84,20 +84,30 @@ const Dashboard = () => {
           value={data.totalLeads}
           textColor="text-blue-600"
         />
+        <DashboardCard
+          icon={<Users className="w-10 h-10 text-green-600" />}
+          label="Total Staff"
+          value={data.totalStaff}
+          textColor="text-green-600"
+        />
       </div>
 
       {/* Lead Status Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {Object.entries(data.statusBreakdown).map(([status, count]) => {
-          const meta = statusMeta[status] || {};
+          const meta = statusMeta[status] || {
+            color: "bg-white text-gray-700",
+            icon: <UserPlus className="w-8 h-8 text-gray-700" />,
+          };
+          const [bgColor, textColor] = meta.color.split(" ");
           return (
             <DashboardCard
               key={status}
               icon={meta.icon}
               label={status.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
               value={count}
-              bgColor={meta.color?.split(" ")[0]}
-              textColor={meta.color?.split(" ")[1]}
+              bgColor={bgColor}
+              textColor={textColor}
             />
           );
         })}

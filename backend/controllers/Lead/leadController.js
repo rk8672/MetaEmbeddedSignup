@@ -5,14 +5,14 @@ const { sendSimpleEmail } = require("../../services/firstWelcomeMail");
 const { notifyManagement } = require("../../services/firstNotifyManagement");
 
 const STATUS_LIST = [
-  "new",
-  "assigned",
-  "in-contact",
-  "follow-up",
-  "payment-sent",
-  "enrolled",
-  "not-interested",
-];
+    "new",           // 1. Just registered (form submitted)
+    "mentor-assigned",    // 2. Mentor/executive assigned
+    "mentor-in-contact",  // 3. Mentor has reached out or is in contact
+    "payment-link-sent",  // 4. Payment (Razorpay) link sent
+    "payment-done",       // 5. Payment received
+    "enrolled",           // 6. Enrollment confirmed, ready to start
+    "not-interested"      // Rejected or unresponsive after follow-ups
+  ]
 
 // Create a new lead
 
@@ -163,6 +163,20 @@ exports.getAllLeads = async (req, res) => {
   }
 };
 
+// Get only enrolled leads
+exports.getEnrolledLeads = async (req, res) => {
+  try {
+    const enrolledLeads = await Lead.find({ status: "enrolled" })
+     .select("fullName") 
+      .sort({ fullName: 1 });
+
+    res.status(200).json(enrolledLeads); 
+    // Example response: [{ "name": "John Doe" }, { "name": "Jane Smith" }]
+  } catch (err) {
+    console.error("Error fetching enrolled leads:", err);
+    res.status(500).json({ message: "Failed to fetch enrolled leads", error: err.message });
+  }
+};
 // Add follow-up entry to a lead
 exports.addFollowUp = async (req, res) => {
   try {
@@ -322,43 +336,70 @@ exports.assignStaffToLead = async (req, res) => {
 exports.getDashboardOverview = async (req, res) => {
   try {
     const [leadCounts, totalStaff] = await Promise.all([
-      // Normalize legacy/messy values -> group
       Lead.aggregate([
-        { $project: { status: { $ifNull: ["$status", "new"] } } },
-        // lowercase & replace spaces with hyphens: "In Contact" -> "in-contact"
-        { $addFields: { s: { $toLower: "$status" } } },
-        { $addFields: { s: { $replaceAll: { input: "$s", find: " ", replacement: "-" } } } },
-        // map legacy values to new enum
+        // Ensure status exists and normalize
         {
           $addFields: {
-            s: {
+            statusNormalized: {
+              $toLower: { $ifNull: ["$status", "new"] },
+            },
+          },
+        },
+        // Replace spaces with hyphens
+        {
+          $addFields: {
+            statusNormalized: {
+              $replaceAll: {
+                input: "$statusNormalized",
+                find: " ",
+                replacement: "-",
+              },
+            },
+          },
+        },
+        // Map old/legacy statuses to new ones
+        {
+          $addFields: {
+            statusNormalized: {
               $switch: {
                 branches: [
-                  { case: { $in: ["$s", ["assigned", "mentor-assigned"]] }, then: "mentor-assigned" },
-                  { case: { $in: ["$s", ["in-contact", "mentor-in-contact"]] }, then: "mentor-in-contact" },
-                  // if you had an old "follow-up" state, bucket it as in-contact
-                  { case: { $eq: ["$s", "follow-up"] }, then: "mentor-in-contact" },
-                  { case: { $in: ["$s", ["payment-sent", "payment-link-sent"]] }, then: "payment-link-sent" },
-                  { case: { $in: ["$s", ["payment-done", "paid"]] }, then: "payment-done" },
-                  { case: { $eq: ["$s", "enrolled"] }, then: "enrolled" },
-                  { case: { $eq: ["$s", "not-interested"] }, then: "not-interested" },
-                  { case: { $eq: ["$s", "new"] }, then: "new" },
+                  { case: { $in: ["$statusNormalized", ["assigned", "mentor-assigned"]] }, then: "mentor-assigned" },
+                  { case: { $in: ["$statusNormalized", ["in-contact", "mentor-in-contact"]] }, then: "mentor-in-contact" },
+                  { case: { $eq: ["$statusNormalized", "follow-up"] }, then: "mentor-in-contact" },
+                  { case: { $in: ["$statusNormalized", ["payment-sent", "payment-link-sent"]] }, then: "payment-link-sent" },
+                  { case: { $in: ["$statusNormalized", ["payment-done", "paid"]] }, then: "payment-done" },
+                  { case: { $eq: ["$statusNormalized", "enrolled"] }, then: "enrolled" },
+                  { case: { $eq: ["$statusNormalized", "not-interested"] }, then: "not-interested" },
+                  { case: { $eq: ["$statusNormalized", "new"] }, then: "new" },
                 ],
                 default: "new",
               },
             },
           },
         },
-        { $group: { _id: "$s", count: { $sum: 1 } } },
+        // Group by normalized status
+        {
+          $group: {
+            _id: "$statusNormalized",
+            count: { $sum: 1 },
+          },
+        },
       ]),
 
+      // Count total staff
       User.countDocuments({ role: "staff" }),
     ]);
 
-    const totalLeads = leadCounts.reduce((a, c) => a + c.count, 0);
+    // Calculate total leads
+    const totalLeads = leadCounts.reduce((acc, curr) => acc + curr.count, 0);
 
-    // Fill all 7 statuses, default 0
-    const statusBreakdown = STATUS_LIST.reduce((acc, k) => ((acc[k] = 0), acc), {});
+    // Fill all statuses with default 0
+    const statusBreakdown = STATUS_LIST.reduce((acc, status) => {
+      acc[status] = 0;
+      return acc;
+    }, {});
+
+    // Populate actual counts
     for (const { _id, count } of leadCounts) {
       if (_id in statusBreakdown) statusBreakdown[_id] = count;
     }

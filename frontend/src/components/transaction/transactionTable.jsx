@@ -118,7 +118,7 @@ const TransactionTable = () => {
 
 
   return (
-    <PageWrapper title="Transactions" subtitle="Manage all Razorpay transactions" >
+    <PageWrapper title="Razorpay Transactions" subtitle="Manage all Razorpay transactions" >
       <div className="p-0">
         {loading ? (
           <div className="p-8 text-center text-gray-500">Loading transactions...</div>

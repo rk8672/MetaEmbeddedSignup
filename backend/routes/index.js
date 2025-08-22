@@ -24,7 +24,8 @@ router.use("/email", emailRoutes);
 const recivedPaymentRoutes=require("../routes/RecivedPayment/recivedPaymentRoutes");
 router.use("/payments", recivedPaymentRoutes);
 
-
+const certificateRoutes = require("../routes/certificate/certificateRoutes");
+router.use("/certificates", certificateRoutes);
 
 
 

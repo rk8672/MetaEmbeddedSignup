@@ -18,9 +18,9 @@ export default function PageWrapper({ title, subtitle, actions, children }) {
             <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
           )}
         </div>
-        {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
+     
       </div>
-
+   {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
       {/* Content Area */}
       <Motion.div
         className="rounded-3xl border border-gray-100 transition-all duration-300"

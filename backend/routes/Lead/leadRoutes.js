@@ -15,6 +15,9 @@ router.use(protect);
 // Get all leads
 router.get("/", leadController.getAllLeads);
 
+// Route to get only enrolled leads
+router.get("/enrolled", leadController.getEnrolledLeads);
+
 router.get("/dashboard", leadController.getDashboardOverview);
 // Get a single lead by ID (optional but useful)
 router.get("/:id", leadController.getLeadById);
