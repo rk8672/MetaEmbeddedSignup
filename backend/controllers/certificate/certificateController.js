@@ -1,7 +1,6 @@
 const Certificate = require("../../models/Certificate/Certificate"); 
 const Lead = require("../../models/Lead/leadModel"); // Lead model
 
-const { v4: uuidv4 } = require("uuid");
 
 // Generate certificate number in format YYMMDD-XXXXXX
 exports.generateCertificateNumber = async (req, res) => {
