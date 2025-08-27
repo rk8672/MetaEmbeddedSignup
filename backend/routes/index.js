@@ -1,33 +1,29 @@
-const express = require("express");
+import express from "express";
+
+// Import all route modules
+import buildingRoutes from "./buildingRoutes.js";
+import adminRoutes from "./adminRoutes.js";
+import roomRoutes from "./roomRoutes.js";
+import shopRoutes from "./shopRoutes.js";
+import guestRoutes from "./guestRoutes.js";
+import shopTenantRoutes from "./shopTenantRoutes.js"
+import allotmentRoutes from "./allotmentRoutes.js";
+import paymentRoutes from "./paymentRoutes.js";
+
+
 const router = express.Router();
-const {protect} = require("../middlewares/authMiddleware");
 
 
 
-const userRoutes=require("../routes/User/authRoutes");
-router.use("/user", userRoutes);
+router.use("/admin", adminRoutes);
+router.use("/buildings", buildingRoutes);
+router.use("/rooms", roomRoutes);
+router.use("/shops", shopRoutes);
+router.use("/guests", guestRoutes);
+router.use("/shoptenants", shopTenantRoutes);
+router.use("/allotment", allotmentRoutes);
+router.use("/payments", paymentRoutes);
 
 
 
-const leadRoutes=require("../routes/Lead/leadRoutes");
-router.use("/leads", leadRoutes);
-
-const transactionRoutes = require("../routes/Transaction/transactionRoutes");
-router.use("/transactions", transactionRoutes);
-
-router.use(protect);
-
-
-const emailRoutes=require("../routes/Email/emailRoutes");
-router.use("/email", emailRoutes);
-
-const recivedPaymentRoutes=require("../routes/RecivedPayment/recivedPaymentRoutes");
-router.use("/payments", recivedPaymentRoutes);
-
-const certificateRoutes = require("../routes/certificate/certificateRoutes");
-router.use("/certificates", certificateRoutes);
-
-
-
-
-module.exports = router;
+export default router;

@@ -1,24 +1,24 @@
-import { useEffect, useState } from 'react';
-import Cookies from 'js-cookie';
-import { jwtDecode } from 'jwt-decode';
-import { useDispatch } from 'react-redux';
-import { loginSuccess } from './slices/authSlice';
+import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "./slices/authSlice";
 
-import './App.css';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import "./App.css";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import ProtectedRoute from './routes/ProtectedRoute';
-import AppLayout from './layouts/AppLayout';
+import ProtectedRoute from "./routes/ProtectedRoute";
+import AppLayout from "./layouts/AppLayout";
 
-import LandingPage from './Pages/LandingPage';
-import Login from './Pages/Login/Login';
-import LeadsTable from './components/LeadTable/LeadsTable';
-import UserManagement from './components/UserManagement/UserManagement';
-import Dashboard from './components/dashboard/dashboard';
-import CertificateGenerator from './components/certificate/CertificateGenerator';
-import TransactionTable from './components/transaction/transactionTable';
-import Reminder from './components/comingsoon/Reminder';
-import Certificate from './components/comingsoon/Certificate';
+import Login from "./Pages/Login/Login";
+import LeadsTable from "./components/LeadTable/LeadsTable";
+import UserManagement from "./components/UserManagement/UserManagement";
+import Dashboard from "./components/dashboard/dashboard";
+
+import Building from "./components/Building/Building";
+import Guest from "./components/Guest/Guest";
+import Payment from "./components/Payment/Payment";
+
 
 function App() {
   const dispatch = useDispatch();
@@ -27,7 +27,7 @@ function App() {
   const [isAuthChecked, setIsAuthChecked] = useState(false);
 
   useEffect(() => {
-    const token = Cookies.get('token');
+    const token = Cookies.get("token");
     if (token) {
       try {
         const decoded = jwtDecode(token);
@@ -39,14 +39,14 @@ function App() {
             user: {
               id: decoded.id,
               role: decoded.role,
-              name: decoded.name,  
-              email: decoded.email 
+              name: decoded.name,
+              email: decoded.email,
             },
           })
         );
       } catch (err) {
-        console.error('Invalid token', err);
-        Cookies.remove('token');
+        console.error("Invalid token", err);
+        Cookies.remove("token");
       }
     }
     setIsAuthChecked(true);
@@ -59,8 +59,8 @@ function App() {
     <Router>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
+        {/* <Route path="/" element={<LandingPage />} /> */}
+        <Route path="/" element={<Login />} />
 
         {/* Protected Routes */}
         <Route
@@ -71,12 +71,11 @@ function App() {
           }
         >
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/leads" element={<LeadsTable />} />
-            <Route path="/certificate" element={<CertificateGenerator />} />
-            {/* <Route path="/certificate" element={<Certificate />} /> */}
+          <Route path="/Guest" element={<Guest />} />
+          <Route path="/Building" element={<Building />} />
+          <Route path="/Payments" element={<Payment />} />
 
-              <Route path="/razorpay-payment" element={<TransactionTable />} />
-  <Route path="/reminder" element={<Reminder />} />
+
           <Route path="/settings" element={<UserManagement />} />
         </Route>
       </Routes>

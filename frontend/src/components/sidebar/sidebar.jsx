@@ -1,6 +1,8 @@
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../slices/authSlice";
-import {  Home, Users, Settings, Award, DollarSign, Bell ,LogOut } from "lucide-react";
+import { 
+  Home, Users, Building, BedDouble, DollarSign, FileBarChart, Settings, LogOut, Store 
+} from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import BrandLogo from "../../assets/BrandLogo/Logo_only.gif";
 const RupeeIcon = () => <span className="text-lg font-bold">₹</span>;
@@ -8,14 +10,19 @@ import "./sidebar.css";
 
 
 
+
+
+
+
 const allMenuItems = [
-  { name: "", icon: Home, path: "/Dashboard", roles: ["admin"] },
-  { name: "Leads", icon: Users, path: "/leads", roles: ["admin", "staff"] },
-  { name: "RazorpayPayment", icon: RupeeIcon, path: "/razorpay-payment", roles: ["admin", "staff"] },
- 
-  { name: "Certificate", icon: Award, path: "/certificate", roles: ["admin", "staff"] },
-  { name: "Reminder", icon: Bell, path: "/reminder", roles: ["admin", "staff"] },
-  { name: "Settings", icon: Settings, path: "/settings", roles: ["admin"] },
+  { name: "Dashboard", icon: Home, path: "/dashboard", roles: ["admin", "staff"] },
+  { name: "Guest", icon: BedDouble, path: "/Guest", roles: ["admin", "staff"] },
+
+  { name: "Building", icon: Building, path: "/Building", roles: ["admin", "staff"] },
+  // { name: "Rooms", icon: BedDouble, path: "/rooms", roles: ["admin", "staff"] },
+  { name: "Payments", icon: DollarSign, path: "/Payments", roles: ["admin", "staff"] },
+  // { name: "Reports", icon: FileBarChart, path: "/reports", roles: ["admin"] },
+  // { name: "Settings", icon: Settings, path: "/settings", roles: ["admin"] },
 ];
 const Sidebar = ({ closeSidebar }) => {
   const location = useLocation();

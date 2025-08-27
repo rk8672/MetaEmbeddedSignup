@@ -61,7 +61,7 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    fetchDashboard();
+    // fetchDashboard();
   }, []);
 
   if (loading) {

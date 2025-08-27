@@ -1,5 +1,7 @@
-require('dotenv').config();
-const mongoose = require("mongoose");
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+
+dotenv.config();
 
 const connectToMongo = async () => {
   try {
@@ -7,15 +9,15 @@ const connectToMongo = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log("Radha Krishna Singh - MongoDB Database connection successfully");
+    console.log("✅ Radha Krishna Singh - MongoDB Database connection successfully");
   } catch (error) {
-    console.error("Error connecting to MongoDB:", error);
+    console.error("❌ Error connecting to MongoDB:", error);
   }
 
   // Add an error event listener to handle unhandled errors
-  mongoose.connection.on('error', (err) => {
-    console.error('MongoDB connection error:', err);
+  mongoose.connection.on("error", (err) => {
+    console.error("MongoDB connection error:", err);
   });
-}
+};
 
-module.exports = connectToMongo;
+export default connectToMongo;

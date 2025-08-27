@@ -1,88 +1,78 @@
 import React, { useState } from "react";
-import axiosInstance from "../../utils/axiosInstance"
+import axiosInstance from "../../utils/axiosInstance";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
-import { FaLock, FaEnvelope, FaInfoCircle } from "react-icons/fa";
+import { FaLock, FaPhone, FaInfoCircle } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../slices/authSlice";
-import BrandLogo from "../../assets/BrandLogo/gif_cyberlogo.gif";
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
   const validateForm = () => {
-    if (!email || !password) {
+    if (!mobile || !password) {
       setError("Both fields are required.");
       return false;
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address.");
+    const phoneRegex = /^[0-9]{10}$/; // adjust if you want country code etc.
+    if (!phoneRegex.test(mobile)) {
+      setError("Please enter a valid 10-digit mobile number.");
       return false;
     }
     return true;
   };
-
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-  if (!validateForm()) return;
+    e.preventDefault();
+    setError("");
+    if (!validateForm()) return;
+    setIsLoading(true);
+    try {
+      const requestBody = { mobile, password };
+      const response = await axiosInstance.post(`/api/admin/login`, requestBody);
+      if (response.data?.token) {
+        const token = response.data.token;
+        const decoded = jwtDecode(token);
 
-  setIsLoading(true);
-  try {
-    const requestBody = { email, password };
+        Cookies.set("token", token, { expires: 7, secure: true });
+        const { name, mobile } = response.data.user;
 
-    const response = await axiosInstance.post(`/api/user/login`, requestBody);
+        dispatch(
+          loginSuccess({
+            token,
+            user: {
+              id: decoded.id,
+              role: decoded.role,
+              name: name,
+              mobile: mobile,
+            },
+          })
+        );
 
-    if (response.data?.token) {
-      const token = response.data.token;
-      const decoded = jwtDecode(token);
-
-      Cookies.set("token", token, { expires: 7, secure: true });
-      const { name, email,} = response.data.user;
-      dispatch(
-        loginSuccess({
-          token,
-           user: {
-      id: decoded.id,
-      role: decoded.role,
-      name: name,
-      email: email,
-    },
-        })
-      );
-      // Redirect based on role
-      if (decoded.role === "admin") {
-        navigate("/Dashboard");
-      } else {
-        navigate("/leads");
+        // Redirect based on role
+        if (decoded.role === "admin") {
+          navigate("/Dashboard");
+        } else {
+          navigate("/leads");
+        }
       }
+    } catch {
+      setError("Login failed. Please check your credentials.");
+    } finally {
+      setIsLoading(false);
     }
-  } catch {
-    setError("Login failed. Please check your credentials.");
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#006699] via-[#00B3B3] to-[#33CCCC] flex justify-center items-center">
       <div className="bg-white p-12 rounded-lg shadow-2xl w-96 max-w-md border-t-8 border-[#006699]">
         {/* Logo and Brand Name */}
         <div className="text-center mb-8">
-          <div>
-            <img src={BrandLogo} alt="" />
-          </div>
-       
           <p className="text-lg text-gray-600 mt-2">
-            Simplifying Student Onboarding & Lead Management
+            Calc360 Rent Management Login
           </p>
         </div>
 
@@ -92,22 +82,22 @@ const Login = () => {
         )}
 
         <form onSubmit={handleSubmit}>
-          {/* Email Input */}
+          {/* Mobile Input */}
           <div className="mb-6">
             <label
-              htmlFor="email"
+              htmlFor="mobile"
               className="block text-sm font-semibold text-gray-700 flex items-center"
             >
-              <FaEnvelope className="text-brand-teal mr-3" />
-              Email Address
+              <FaPhone className="text-brand-teal mr-3" />
+              Mobile Number
             </label>
             <input
-              type="email"
-              id="email"
+              type="text"
+              id="mobile"
               className="w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-teal transition-all"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your mobile number"
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value)}
               required
             />
           </div>
@@ -140,23 +130,13 @@ const Login = () => {
           >
             {isLoading ? "Logging In..." : "Login"}
           </button>
-
-          {/* Back Button */}
-          {/* <button
-            onClick={() => navigate("/")}
-            className="w-full bg-gray-200 text-black py-3 rounded-lg mt-4 hover:bg-gray-300 transition-all"
-          >
-            Back
-          </button> */}
         </form>
-
-        
 
         {/* Info Footer */}
         <div className="mt-6 text-center text-gray-600 text-sm">
           <p>
             <FaInfoCircle className="inline mr-1" /> Secure login powered by{" "}
-            <strong className="text-brand-blue">Cybervie</strong>
+            <strong className="text-brand-blue">Calc360</strong>
           </p>
         </div>
       </div>

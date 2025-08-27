@@ -1,35 +1,31 @@
-const express = require("express");
-require("dotenv").config();
-const cors = require("cors");
-const bodyParser = require("body-parser");
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import bodyParser from "body-parser"; // (not needed if only using express.json / urlencoded)
+import dataConnection from "./config/db.js";
+import mainRouter from "./routes/index.js";
+
+dotenv.config();
+
 const app = express();
 
-
+// Middlewares
 app.use(cors());
 app.use(express.json()); // Handles application/json
 app.use(express.urlencoded({ extended: true })); // Handles form data
 
-const dataConnection = require("./config/db.js");
+// Connect to DB
 dataConnection();
 
-const whatsappWebhook=require('./webhook/whatsappWebhook');
-const razorpayWebhook = require('./webhook/razorpayWebhook');
-app.use('/webhook', razorpayWebhook);
-app.use('/webhook',whatsappWebhook);
+// Routes
+app.use("/api", mainRouter);
 
+app.get("/", (req, res) => {
+  res.send("Hello from Backend Team - Radha Krishna Singh");
+});
 
-//Index Route
-const main = require("./routes/index.js");
-app.use('/api', main);
-
-app.get('/', (req, res) => {
-    res.send("Hello from Backend Team - Radha Krishna Singh");
-})
-
-
-
-const port = process.env.PORT || 10000; 
+const port = process.env.PORT || 10000;
 
 app.listen(port, () => {
-    console.log(` Radha Krishna Singh Server is up and running on ${port}`)
-})
+  console.log(`🚀 Radha Krishna Singh Server is up and running on port ${port}`);
+});
