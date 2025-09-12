@@ -16,13 +16,7 @@ import "./sidebar.css";
 
 const allMenuItems = [
   { name: "Dashboard", icon: Home, path: "/dashboard", roles: ["admin", "staff"] },
-  { name: "Guest", icon: BedDouble, path: "/Guest", roles: ["admin", "staff"] },
 
-  { name: "Building", icon: Building, path: "/Building", roles: ["admin", "staff"] },
-  // { name: "Rooms", icon: BedDouble, path: "/rooms", roles: ["admin", "staff"] },
-  { name: "Payments", icon: DollarSign, path: "/Payments", roles: ["admin", "staff"] },
-  // { name: "Reports", icon: FileBarChart, path: "/reports", roles: ["admin"] },
-  // { name: "Settings", icon: Settings, path: "/settings", roles: ["admin"] },
 ];
 const Sidebar = ({ closeSidebar }) => {
   const location = useLocation();

@@ -11,13 +11,9 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import AppLayout from "./layouts/AppLayout";
 
 import Login from "./Pages/Login/Login";
-import LeadsTable from "./components/LeadTable/LeadsTable";
-import UserManagement from "./components/UserManagement/UserManagement";
-import Dashboard from "./components/dashboard/dashboard";
+import EmbeddedSignup from "./components/EmbeddedSignup";
+import WhatsAppDashboard from "./components/WhatsAppDashboard";
 
-import Building from "./components/Building/Building";
-import Guest from "./components/Guest/Guest";
-import Payment from "./components/Payment/Payment";
 
 
 function App() {
@@ -70,13 +66,10 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/Guest" element={<Guest />} />
-          <Route path="/Building" element={<Building />} />
-          <Route path="/Payments" element={<Payment />} />
+          <Route path="/EmbeddedSignup" element={<EmbeddedSignup />} />
+          <Route path="/WhatsAppDashboard" element={<WhatsAppDashboard/>} />
 
-
-          <Route path="/settings" element={<UserManagement />} />
+       
         </Route>
       </Routes>
     </Router>

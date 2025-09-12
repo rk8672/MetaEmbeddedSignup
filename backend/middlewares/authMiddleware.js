@@ -1,16 +1,21 @@
+// middleware/authMiddleware.js
 import jwt from "jsonwebtoken";
-import Admin from "../models/AdminModel.js";
+import User from "../models/UserModel.js";
 
 export const protect = async (req, res, next) => {
   let token;
-  if (req.headers.authorization?.startsWith("Bearer")) {
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
     try {
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.admin = await Admin.findById(decoded.id).select("-password");
+      req.user = await User.findById(decoded.id).select("-password");
       next();
-    } catch (error) {
-      return res.status(401).json({ message: "Not authorized, token failed" });
+    } catch (err) {
+      console.error(err);
+      res.status(401).json({ message: "Not authorized, token failed" });
     }
   }
   if (!token) {

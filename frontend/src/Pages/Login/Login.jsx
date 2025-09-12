@@ -32,7 +32,7 @@ const Login = () => {
     setIsLoading(true);
     try {
       const requestBody = { mobile, password };
-      const response = await axiosInstance.post(`/api/admin/login`, requestBody);
+      const response = await axiosInstance.post(`/api/users/login`, requestBody);
       if (response.data?.token) {
         const token = response.data.token;
         const decoded = jwtDecode(token);
@@ -54,9 +54,9 @@ const Login = () => {
 
         // Redirect based on role
         if (decoded.role === "admin") {
-          navigate("/Dashboard");
+          navigate("/WhatsAppDashboard");
         } else {
-          navigate("/leads");
+          navigate("/WhatsAppDashboard");
         }
       }
     } catch {

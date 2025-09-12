@@ -4,7 +4,6 @@ import cors from "cors";
 import bodyParser from "body-parser"; // (not needed if only using express.json / urlencoded)
 import dataConnection from "./config/db.js";
 import mainRouter from "./routes/index.js";
-
 dotenv.config();
 
 const app = express();
@@ -20,6 +19,7 @@ dataConnection();
 // Routes
 app.use("/api", mainRouter);
 
+
 app.get("/", (req, res) => {
   res.send("Hello from Backend Team - Radha Krishna Singh");
 });
@@ -27,5 +27,5 @@ app.get("/", (req, res) => {
 const port = process.env.PORT || 10000;
 
 app.listen(port, () => {
-  console.log(`🚀 Radha Krishna Singh Server is up and running on port ${port}`);
+  console.log(` Radha Krishna Singh Server is up and running on port ${port}`);
 });
