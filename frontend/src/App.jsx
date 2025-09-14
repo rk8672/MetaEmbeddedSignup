@@ -13,6 +13,7 @@ import AppLayout from "./layouts/AppLayout";
 import Login from "./Pages/Login/Login";
 import EmbeddedSignup from "./components/EmbeddedSignup";
 import WhatsAppDashboard from "./components/WhatsAppDashboard";
+import WhatsAppDetail from "./components/DetailPage";
 
 
 
@@ -67,7 +68,9 @@ function App() {
           }
         >
           <Route path="/EmbeddedSignup" element={<EmbeddedSignup />} />
-          <Route path="/WhatsAppDashboard" element={<WhatsAppDashboard/>} />
+          <Route path="/Dashboard" element={<WhatsAppDashboard/>} />
+
+
 
        
         </Route>

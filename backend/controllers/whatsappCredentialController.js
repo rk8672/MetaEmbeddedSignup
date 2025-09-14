@@ -9,10 +9,8 @@ export const addWhatsAppCredential = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Check if credential already exists for this user
     const existing = await WhatsAppCredential.findOne({ user: req.user._id });
     if (existing) {
-      // update existing instead of creating new
       existing.wabaId = wabaId;
       existing.phoneNumberId = phoneNumberId;
       existing.accessToken = accessToken;
@@ -33,14 +31,10 @@ export const addWhatsAppCredential = async (req, res) => {
   }
 };
 
-// Get WhatsApp credentials of logged-in user
-export const getMyWhatsAppCredential = async (req, res) => {
+export const getMyWhatsAppCredentials = async (req, res) => {
   try {
-    const credential = await WhatsAppCredential.findOne({ user: req.user._id });
-    if (!credential) {
-      return res.status(404).json({ message: "No credentials found" });
-    }
-    res.json(credential);
+    const credentials = await WhatsAppCredential.find({ user: req.user._id });
+    res.json(credentials);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

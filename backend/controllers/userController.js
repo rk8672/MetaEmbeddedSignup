@@ -26,14 +26,13 @@ export const registerUser = async (req, res) => {
 };
 
 // Login
-// Login
 export const loginUser = async (req, res) => {
   try {
     const { mobile, password } = req.body;
 
     const user = await User.findOne({ mobile });
     if (user && (await user.matchPassword(password))) {
-      const token = generateToken(user._id, "user"); // pass role "user"
+      const token = generateToken(user._id, "user"); 
 
       res.json({
         user: {
@@ -41,7 +40,7 @@ export const loginUser = async (req, res) => {
           name: user.name,
           email: user.email,
           mobile: user.mobile,
-          role: "user", // fixed role
+          role: "user", 
         },
         token,
       });
@@ -57,7 +56,7 @@ export const loginUser = async (req, res) => {
 // Get profile
 export const getUserProfile = async (req, res) => {
   try {
-    res.json(req.user); // user is already attached by middleware
+    res.json(req.user); 
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

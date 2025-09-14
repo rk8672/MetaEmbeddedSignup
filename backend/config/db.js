@@ -9,9 +9,9 @@ const connectToMongo = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log("✅ Radha Krishna Singh - MongoDB Database connection successfully");
+    console.log(" Radha Krishna Singh - MongoDB Database connection successfully");
   } catch (error) {
-    console.error("❌ Error connecting to MongoDB:", error);
+    console.error(" Error connecting to MongoDB:", error);
   }
 
   // Add an error event listener to handle unhandled errors

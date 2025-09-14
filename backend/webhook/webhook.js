@@ -4,7 +4,7 @@ import MessageStatus from "../models/MessageStatus.js";
 
 const router = express.Router();
 
-// ✅ Verification endpoint
+// Verification endpoint
 router.get("/", (req, res) => {
   const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
 
@@ -14,7 +14,7 @@ router.get("/", (req, res) => {
 
   if (mode && token) {
     if (mode === "subscribe" && token === VERIFY_TOKEN) {
-      console.log("✅ Webhook verified successfully");
+      console.log(" Webhook verified successfully");
       return res.status(200).send(challenge);
     } else {
       return res.sendStatus(403);
@@ -23,7 +23,7 @@ router.get("/", (req, res) => {
   res.sendStatus(400);
 });
 
-// ✅ Event listener endpoint
+//  Event listener endpoint
 router.post("/", async (req, res) => {
   try {
     const body = req.body;
@@ -50,7 +50,7 @@ router.post("/", async (req, res) => {
           // Handle Incoming Messages
           if (value.messages) {
             for (const msg of value.messages) {
-              console.log("💬 Incoming Message:", msg);
+              console.log(" Incoming Message:", msg);
 
               await IncomingMessage.create({
                 msgId: msg.id,
@@ -65,10 +65,10 @@ router.post("/", async (req, res) => {
       }
     }
 
-    // ✅ Always return 200 fast to avoid retries
+    // Always return 200 fast to avoid retries
     res.sendStatus(200);
   } catch (err) {
-    console.error("❌ Webhook error:", err);
+    console.error(" Webhook error:", err);
     res.sendStatus(500);
   }
 });
