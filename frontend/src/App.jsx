@@ -58,7 +58,6 @@ function App() {
     <Router>
       <Routes>
         {/* Public Routes */}
-        {/* <Route path="/" element={<LandingPage />} /> */}
           <Route path="/" element={<Login />} />
            <Route path="/PrivacyPolicy" element={<PrivacyPolicy/>} />
           <Route path="/TermsAndConditions" element={<TermsAndConditions/>} />

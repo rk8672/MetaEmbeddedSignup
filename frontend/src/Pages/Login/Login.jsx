@@ -144,7 +144,14 @@ const Login = () => {
 
         {/* Info Footer */}
         <div className="mt-6 text-center text-gray-600 text-sm">
-        <p className="text-sm text-gray-600 mt-4">
+    
+ <p className="text-sm text-gray-600 mt-2">
+    <span className="font-semibold text-gray-900">Testing Login Credentials:</span><br />
+    Mobile Number: <span className="font-mono">7524807719</span><br />
+    Password: <span className="font-mono">Rk@123</span>
+  </p>
+
+      <p className="text-sm text-gray-600 mt-4">
   <FaInfoCircle className="inline mr-1" /> Assignment Made by {" "}
   <span className="font-semibold text-gray-900">Radha Krishna Singh</span>
 </p>

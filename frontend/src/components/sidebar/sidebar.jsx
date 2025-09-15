@@ -2,9 +2,7 @@ import { useDispatch } from "react-redux";
 import { logout } from "../../slices/authSlice";
 import {
   Home,
-  Users,
-  FileBarChart,
-  Settings,
+  UserPlus,
   LogOut,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -13,6 +11,7 @@ import "./sidebar.css";
 
 const allMenuItems = [
   { name: "Dashboard", icon: Home, path: "/Dashboard" },
+   { name: "EmbeddedSignup", icon: UserPlus, path: "/EmbeddedSignup" },
 
 ];
 
