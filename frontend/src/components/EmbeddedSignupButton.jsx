@@ -56,61 +56,40 @@ export default function WhatsAppEmbeddedSignup({
 
   // 3️⃣ Listen for Embedded Signup messages
   useEffect(() => {
-    const handleMessage = async (event) => {
-      console.log("Received message event:", event);
-      // Loosen origin check for testing + Meta domains
-      if (!event.origin.includes("facebook.com") && !event.origin.includes("metaembeddedsignup")) {
-        console.log("Ignored message from origin:", event.origin);
-        return;
-      }
+  let storedIds = {}; // store IDs once
 
-      let data;
-      try {
-        data = JSON.parse(event.data);
-        console.log("Parsed JSON message:", data);
-      } catch {
-        console.log("Message is not JSON, parsing as query string...");
-        data = { data: parseQueryString(event.data), type: "WA_EMBEDDED_SIGNUP", event: "FINISH" };
-      }
+const handleMessage = async (event) => {
+  let data;
 
-     if (data.type === "WA_EMBEDDED_SIGNUP") {
-  console.log("WA_EMBEDDED_SIGNUP event:", data);
-
-  // Extract everything safely
-  const code = data.data?.code || data.code;
-  const waba_id = data.data?.waba_id || data.waba_id;
-  const phone_number_id = data.data?.phone_number_id || data.phone_number_id;
-  const business_id = data.data?.business_id || data.business_id;
-
-  if (!code) {
-    console.error("Embedded Signup code missing!", data.data);
-    setSessionInfo("Error: Embedded Signup code missing!");
-    return;
-  }
-
-  setSessionInfo(
-    `Signup Complete!\nWABA ID: ${waba_id}\nPhone Number ID: ${phone_number_id}\nBusiness ID: ${business_id}\nCode: ${code}`
-  );
-
-  // Exchange code on your backend
   try {
-    console.log("Exchanging code with backend...", code);
-    const res = await fetch(
-      `https://metaembeddedsignup-backend.onrender.com/api/embeddedSignup/exchange-token?code=${code}`
-    );
-    const result = await res.json();
-    console.log("Backend response:", result);
-    if (result.success) {
-      setAccessToken(result.access_token);
-      console.log("Access token set:", result.access_token);
-    } else {
-      console.error("Failed to get access token:", result);
-    }
-  } catch (err) {
-    console.error("Error exchanging code:", err);
+    data = JSON.parse(event.data);
+  } catch {
+    data = { data: parseQueryString(event.data), type: "WA_EMBEDDED_SIGNUP", event: "FINISH" };
   }
-}
+
+  if (data.type === "WA_EMBEDDED_SIGNUP") {
+    // Only set IDs if they exist
+    storedIds = {
+      waba_id: data.data?.waba_id || storedIds.waba_id,
+      phone_number_id: data.data?.phone_number_id || storedIds.phone_number_id,
+      business_id: data.data?.business_id || storedIds.business_id,
+      code: data.data?.code || data.code || storedIds.code,
     };
+
+    setSessionInfo(
+      `Signup Complete!\nWABA ID: ${storedIds.waba_id}\nPhone Number ID: ${storedIds.phone_number_id}\nBusiness ID: ${storedIds.business_id}\nCode: ${storedIds.code}`
+    );
+
+    if (storedIds.code) {
+      // exchange code with backend
+      const res = await fetch(
+        `https://metaembeddedsignup-backend.onrender.com/api/embeddedSignup/exchange-token?code=${storedIds.code}`
+      );
+      const result = await res.json();
+      if (result.success) setAccessToken(result.access_token);
+    }
+  }
+};
 
     window.addEventListener("message", handleMessage);
     return () => {
