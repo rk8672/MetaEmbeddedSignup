@@ -1,4 +1,3 @@
-// src/slices/authSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
 
@@ -16,14 +15,12 @@ const authSlice = createSlice({
       state.user = user;
       state.isAuthenticated = true;
 
-      // Save token in cookie instead of localStorage
       Cookies.set("token", token, { secure: true, sameSite: "Strict" });
     },
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
 
-      // Remove token from cookie
       Cookies.remove("token");
     },
   },

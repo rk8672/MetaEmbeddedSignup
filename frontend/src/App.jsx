@@ -17,12 +17,9 @@ import WhatsAppDetail from "./components/DetailPage";
 import PrivacyPolicy from "./Pages/PrivacyPolicy";
 import TermsAndConditions from "./Pages/TermsAndConditions";
 
-
-
 function App() {
   const dispatch = useDispatch();
 
-  // Load status to wait for token hydration
   const [isAuthChecked, setIsAuthChecked] = useState(false);
 
   useEffect(() => {
@@ -31,7 +28,6 @@ function App() {
       try {
         const decoded = jwtDecode(token);
 
-        // Optional: You can add expiration check here
         dispatch(
           loginSuccess({
             token,
@@ -51,17 +47,14 @@ function App() {
     setIsAuthChecked(true);
   }, [dispatch]);
 
-  // Wait until auth is checked before rendering routes
   if (!isAuthChecked) return <div>Loading...</div>;
 
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
-          <Route path="/" element={<Login />} />
-           <Route path="/PrivacyPolicy" element={<PrivacyPolicy/>} />
-          <Route path="/TermsAndConditions" element={<TermsAndConditions/>} />
-        {/* Protected Routes */}
+        <Route path="/" element={<Login />} />
+        <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
+        <Route path="/TermsAndConditions" element={<TermsAndConditions />} />
         <Route
           element={
             <ProtectedRoute>
@@ -70,12 +63,7 @@ function App() {
           }
         >
           <Route path="/EmbeddedSignup" element={<EmbeddedSignup />} />
-          <Route path="/Dashboard" element={<WhatsAppDashboard/>} />
-       
-
-
-
-       
+          <Route path="/Dashboard" element={<WhatsAppDashboard />} />
         </Route>
       </Routes>
     </Router>

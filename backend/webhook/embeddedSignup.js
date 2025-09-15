@@ -17,7 +17,6 @@ router.post("/exchange-token",protect, async (req, res) => {
   }
 
   try {
-    // 1️⃣ Exchange code → get access token
     const tokenResponse = await axios.get(
       "https://graph.facebook.com/v21.0/oauth/access_token",
       {
@@ -31,15 +30,13 @@ router.post("/exchange-token",protect, async (req, res) => {
 
     const accessToken = tokenResponse.data.access_token;
 
-    // 2️⃣ Save credentials for logged-in user
-   // Instead of findOne → check by phoneNumberId
+   
 const existing = await WhatsAppCredential.findOne({
   user: req.user._id,
   phoneNumberId,
 });
 
 if (existing) {
-  // Update if same phone number already onboarded
   existing.wabaId = wabaId;
   existing.businessAccountId = businessId;
   existing.accessToken = accessToken;
@@ -47,7 +44,6 @@ if (existing) {
   return res.json({ success: true, message: "Credentials updated", credential: existing });
 }
 
-// Else create new record
 const credential = await WhatsAppCredential.create({
   user: req.user._id,
   wabaId,

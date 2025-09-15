@@ -1,4 +1,3 @@
-// whatsappCredentialRoutes.js
 import express from "express";
 import { addWhatsAppCredential, getMyWhatsAppCredentials } from "../controllers/whatsappCredentialController.js";
 import { protect } from "../middlewares/authMiddleware.js";

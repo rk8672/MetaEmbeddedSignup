@@ -8,10 +8,9 @@ dotenv.config();
 
 const app = express();
 
-// Middlewares
 app.use(cors());
-app.use(express.json()); // Handles application/json
-app.use(express.urlencoded({ extended: true })); // Handles form data
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
 
 // Connect to DB
 dataConnection();

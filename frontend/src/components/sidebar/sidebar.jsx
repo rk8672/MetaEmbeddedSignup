@@ -21,14 +21,12 @@ const Sidebar = ({ closeSidebar }) => {
 
   return (
     <aside className="h-screen w-60 bg-white border-r border-gray-200 shadow-md flex flex-col">
-      {/* Branding */}
       <div className="flex items-center px-5 py-4 border-b border-gray-100">
         <span className="ml-3 text-xl font-semibold text-gray-800">
          ab media
         </span>
       </div>
 
-      {/* Menu Items */}
       <nav className="flex-1 flex flex-col py-4">
         {allMenuItems.map(({ name, icon: Icon, path }) => {
           const isActive = location.pathname === path;
@@ -44,7 +42,6 @@ const Sidebar = ({ closeSidebar }) => {
                     : "text-gray-600 hover:bg-gray-50 hover:text-blue-500"
                 }`}
             >
-              {/* Active Indicator */}
               {isActive && (
                 <span className="absolute left-0 top-0 h-full w-1 bg-blue-500 rounded-r-md" />
               )}
@@ -55,7 +52,6 @@ const Sidebar = ({ closeSidebar }) => {
         })}
       </nav>
 
-      {/* Logout Button */}
       <div className="px-3 py-4 border-t border-gray-100">
         <button
           onClick={() => dispatch(logout())}

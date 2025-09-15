@@ -14,7 +14,6 @@ const connectToMongo = async () => {
     console.error(" Error connecting to MongoDB:", error);
   }
 
-  // Add an error event listener to handle unhandled errors
   mongoose.connection.on("error", (err) => {
     console.error("MongoDB connection error:", err);
   });

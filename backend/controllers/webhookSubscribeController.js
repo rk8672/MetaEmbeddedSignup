@@ -7,7 +7,6 @@ export const subscribeWebhook = async (req, res) => {
 
   try {
     const endpoint = `/${wabaId}/subscribed_apps`;
-    // const endpoint = `/1359829485863447/subscribed_apps`;
 
     const response = await callMetaApi({
       endpoint,
@@ -35,7 +34,6 @@ export const subscribeWebhook = async (req, res) => {
   }
 };
 
-//  Check webhook subscription status
 export const getWebhookStatus = async (req, res) => {
   const { wabaId, accessToken } = req.body;
 
@@ -61,7 +59,6 @@ export const getWebhookStatus = async (req, res) => {
   }
 };
 
-// ✅ Unsubscribe webhook
 export const unsubscribeWebhook = async (req, res) => {
   const { wabaId, accessToken } = req.body;
 
@@ -79,7 +76,7 @@ export const unsubscribeWebhook = async (req, res) => {
       data: response,
     });
   } catch (err) {
-    console.error("❌ Webhook unsubscribe error:", err.message);
+    console.error(" Webhook unsubscribe error:", err.message);
     res.status(500).json({
       success: false,
       error: err.message,

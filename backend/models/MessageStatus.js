@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const MessageStatusSchema = new mongoose.Schema(
   {
     msgId: { type: String, required: true },
-    status: String, // delivered, read, failed
+    status: String, 
     timestamp: String,
   },
   { timestamps: true }

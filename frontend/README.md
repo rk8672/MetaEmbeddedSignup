@@ -6,7 +6,7 @@ It allows onboarding WhatsApp Business Accounts, capturing credentials, and usin
 
 The flow includes:  
 1. **Login with testing account**  
-   - Go to 👉 https://metaembeddedsignup.onrender.com/  
+   - Go to  https://metaembeddedsignup.onrender.com/  
    - Login using the provided test credentials.  
 
 2. **Embedded Signup**  
@@ -69,26 +69,6 @@ The flow includes:
 
 ---
 
-## 4) Key Features  
-✅ Login with test account  
-✅ End-to-end Embedded Signup flow  
-✅ Secure access token exchange + storage  
-✅ Dashboard for managing onboarded accounts  
-✅ Meta API calls from stored credentials  
-✅ Webhook subscription + event handling  
-✅ Display name, number verification, and payment status  
-
----
-
-## 4) Key Features  
-✅ One-click Meta Embedded Signup flow  
-✅ Phone number verification inside signup process  
-✅ Webhook verification + event handling  
-✅ Payment method auto-attach status fetched from API  
-✅ Display name approval tracking in real-time  
-✅ Admin dashboard for logs and status  
-
----
 
 ## 5) Test Login  
 For demo access:  

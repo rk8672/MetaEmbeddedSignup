@@ -1,6 +1,5 @@
 import WhatsAppCredential from "../models/WhatsAppCredentialModel.js";
 
-// Attach WhatsApp credentials to a user
 export const addWhatsAppCredential = async (req, res) => {
   try {
     const { wabaId, phoneNumberId, accessToken } = req.body;

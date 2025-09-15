@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import API from "../utils/axiosInstance";
 import { toast } from "react-toastify";
 import WhatsAppDetail from "./DetailPage";
-import { Phone, Key, Database, PlusCircle } from "lucide-react"; // ✅ icons
+import { Phone, Key, Database, PlusCircle } from "lucide-react"; 
 
 const WhatsAppDashboard = () => {
   const [credentials, setCredentials] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState(null); // selected account
+  const [selected, setSelected] = useState(null); 
 
   useEffect(() => {
     fetchCredentials();
@@ -32,12 +32,10 @@ const WhatsAppDashboard = () => {
     );
   }
 
-  // 🔹 Conditional rendering: show detail if selected
   if (selected) {
     const account = credentials.find((c) => c._id === selected);
     return (
       <WhatsAppDetail
-        account={account}
         wabaId={account.wabaId}
         token={account.accessToken}
         onBack={() => setSelected(null)}
@@ -45,10 +43,8 @@ const WhatsAppDashboard = () => {
     );
   }
 
-  // 🔹 Default: show account cards
   return (
     <div className="container mx-auto p-6">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">
@@ -75,7 +71,7 @@ const WhatsAppDashboard = () => {
             <div
               key={cred._id}
               className="bg-white shadow-md hover:shadow-xl rounded-xl p-6 border border-gray-100 cursor-pointer transition-all transform hover:scale-105"
-              onClick={() => setSelected(cred._id)} // <-- select account
+              onClick={() => setSelected(cred._id)} 
             >
               <div className="flex items-center gap-3 mb-4">
                 <Phone className="w-6 h-6 text-green-600" />
