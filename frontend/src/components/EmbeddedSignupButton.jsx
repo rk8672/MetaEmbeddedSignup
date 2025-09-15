@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 export default function WhatsAppEmbeddedSignup({
   APP_ID = "1136675654949786",     // default Meta App ID
-  CONFIG_ID = "1923537345046392", // default Embedded Signup Config ID
+  CONFIG_ID = "1351177489853567", // default Embedded Signup Config ID
 }) {
   useEffect(() => {
     // Load FB SDK
