@@ -22,12 +22,7 @@ router.get("/exchange-token", async (req, res) => {
 
     const businessToken = tokenResponse.data.access_token;
 
-    // Step 2: Optional: Subscribe your app to webhooks for this WABA
-    // const subscribeResponse = await axios.post(
-    //   `https://graph.facebook.com/v23.0/${waba_id}/subscribed_apps`,
-    //   {},
-    //   { headers: { Authorization: `Bearer ${businessToken}` } }
-    // );
+ 
 
     res.json({ success: true, access_token: businessToken });
   } catch (err) {
