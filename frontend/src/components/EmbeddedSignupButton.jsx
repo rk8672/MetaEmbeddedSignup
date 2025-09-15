@@ -1,12 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function WhatsAppEmbeddedSignup({
-  // APP_ID = "1136675654949786",     calc
-  // CONFIG_ID = "1351177489853567", calc
-   APP_ID = "1161878365754956", 
- CONFIG_ID = "1171586581686783", // RK TestAPP
-  
+  APP_ID = "1171586581686783", 
+ CONFIG_ID = "1171586581686783",
 }) {
+  const [accessToken, setAccessToken] = useState("");
+
   useEffect(() => {
     // Load FB SDK
     window.fbAsyncInit = function () {
@@ -31,8 +30,8 @@ export default function WhatsAppEmbeddedSignup({
       fjs.parentNode.insertBefore(js, fjs);
     })(document, "script", "facebook-jssdk");
 
-    // Listen for events
-    const handleMessage = (event) => {
+    // Listen for embedded signup finish
+    const handleMessage = async (event) => {
       if (
         event.origin !== "https://www.facebook.com" &&
         event.origin !== "https://web.facebook.com"
@@ -43,13 +42,24 @@ export default function WhatsAppEmbeddedSignup({
         const data = JSON.parse(event.data);
         if (data.type === "WA_EMBEDDED_SIGNUP" && data.event === "FINISH") {
           const { phone_number_id, waba_id } = data.data;
+          console.log("Embedded Signup Data:", data.data);
+
+          // Display IDs
           const sessionInfoPre = document.getElementById("sessionInfo");
           if (sessionInfoPre) {
-            sessionInfoPre.textContent = ` Signup Complete!\nWABA ID: ${waba_id}\nPhone Number ID: ${phone_number_id}`;
+            sessionInfoPre.textContent = `Signup Complete!\nWABA ID: ${waba_id}\nPhone Number ID: ${phone_number_id}`;
           }
-          console.log("Embedded Signup Data:", data.data);
+
+          // Call backend to exchange token
+          const res = await fetch(
+            `https://metaembeddedsignup-backend.onrender.com/api/embeddedSignup/exchange-token?waba_id=${waba_id}&phone_number_id=${phone_number_id}`
+          );
+          const result = await res.json();
+          if (result.success) {
+            setAccessToken(result.access_token);
+          }
         }
-      } catch {
+      } catch  {
         console.warn("Non-JSON message received:", event.data);
       }
     };
@@ -84,8 +94,16 @@ export default function WhatsAppEmbeddedSignup({
 
   return (
     <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center" }}>
-      <button onClick={handleSignupClick}>Connect WhatsApp (Embedded Signup)</button>
+      <button onClick={handleSignupClick}>
+        Connect WhatsApp (Embedded Signup)
+      </button>
       <pre id="sessionInfo">...</pre>
+      {accessToken && (
+        <div>
+          <h3>✅ Access Token:</h3>
+          <pre>{accessToken}</pre>
+        </div>
+      )}
     </div>
   );
 }
