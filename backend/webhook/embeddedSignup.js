@@ -6,7 +6,7 @@ const router = express.Router();
 // Hardcoded App Credentials (replace with your own)
 const META_APP_ID = "1161878365754956";   // RK Test APP ID
 const META_APP_SECRET = "038095ebcbb2ac866ae993a20b0e1b73"; // copy from Meta app settings
-const REDIRECT_URI = "https://metaembeddedsignup-backend.onrender.com/api/webhook"; // must match Meta app
+const REDIRECT_URI = "https://metaembeddedsignup-backend.onrender.com/api/embeddedSignup/callback"; // must match Meta app
 
 // Redirect URI endpoint for embedded signup
 router.get("/callback", async (req, res) => {
