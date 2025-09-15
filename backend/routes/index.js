@@ -6,6 +6,9 @@ import detailsRoutes from "./detailsRoutes.js";
 import displayNameRoutes from "./displayNameRoutes.js"; 
 import mobileVerificationRoutes from "./mobileVerificationRoutes.js"; 
 
+import embeddedSignup from "../webhook/embeddedSignup.js"; 
+
+
 
 
 const router = express.Router();
@@ -19,6 +22,7 @@ router.use("/whatsapp", WhatsAppCredentialRoute);
 // Webhook routes
 router.use("/webhook", webhookRouter);
 
+router.use("/embeddedSignup", embeddedSignup);
 
 router.use("/details", detailsRoutes);
 

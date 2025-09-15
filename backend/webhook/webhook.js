@@ -26,6 +26,7 @@ router.get("/", (req, res) => {
 //  Event listener endpoint
 router.post("/", async (req, res) => {
   try {
+    res.sendStatus(200);
     const body = req.body;
 
     if (body.object && body.entry) {
@@ -65,8 +66,8 @@ router.post("/", async (req, res) => {
       }
     }
 
-    // Always return 200 fast to avoid retries
-    res.sendStatus(200);
+   
+    
   } catch (err) {
     console.error(" Webhook error:", err);
     res.sendStatus(500);
