@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 export default function WhatsAppEmbeddedSignup({
-  APP_ID = "1171586581686783", 
+  APP_ID = "1161878365754956", 
  CONFIG_ID = "1171586581686783",
 }) {
   const [accessToken, setAccessToken] = useState("");
