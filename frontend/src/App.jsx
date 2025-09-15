@@ -59,8 +59,9 @@ function App() {
       <Routes>
         {/* Public Routes */}
         {/* <Route path="/" element={<LandingPage />} /> */}
-        <Route path="/" element={<Login />} />
-
+          <Route path="/" element={<Login />} />
+           <Route path="/PrivacyPolicy" element={<PrivacyPolicy/>} />
+          <Route path="/TermsAndConditions" element={<TermsAndConditions/>} />
         {/* Protected Routes */}
         <Route
           element={
@@ -71,8 +72,7 @@ function App() {
         >
           <Route path="/EmbeddedSignup" element={<EmbeddedSignup />} />
           <Route path="/Dashboard" element={<WhatsAppDashboard/>} />
-          <Route path="/PrivacyPolicy" element={<PrivacyPolicy/>} />
-          <Route path="/TermsAndConditions" element={<TermsAndConditions/>} />
+       
 
 
 
