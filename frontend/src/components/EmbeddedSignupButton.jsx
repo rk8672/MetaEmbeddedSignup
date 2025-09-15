@@ -2,20 +2,24 @@ import { useEffect, useState } from "react";
 
 export default function WhatsAppEmbeddedSignup({
   APP_ID = "1161878365754956",          // Replace with your App ID
-  CONFIG_ID = "1171586581686783",    // Replace with your Embedded Signup Config ID
-  FEATURE_TYPE = "",                 // Optional: "", "only_waba_sharing", "whatsapp_business_app_onboarding"
+  CONFIG_ID = "1171586581686783",      // Replace with your Embedded Signup Config ID
+  FEATURE_TYPE = "",            // Optional: "", "only_waba_sharing", "whatsapp_business_app_onboarding"
 }) {
   const [accessToken, setAccessToken] = useState("");
   const [sdkLoaded, setSdkLoaded] = useState(false);
+  const [sessionInfo, setSessionInfo] = useState("Waiting for signup...");
 
-  // Load Facebook SDK dynamically
+  // 1️⃣ Load FB SDK dynamically
   useEffect(() => {
+    console.log("Loading FB SDK...");
     if (window.FB) {
+      console.log("FB SDK already loaded.");
       setSdkLoaded(true);
       return;
     }
 
     window.fbAsyncInit = function () {
+      console.log("Initializing FB SDK...");
       window.FB.init({
         appId: APP_ID,
         autoLogAppEvents: true,
@@ -30,69 +34,100 @@ export default function WhatsAppEmbeddedSignup({
     script.src = "https://connect.facebook.net/en_US/sdk.js";
     script.async = true;
     script.defer = true;
+    script.onload = () => console.log("FB SDK script loaded.");
     document.body.appendChild(script);
 
     return () => {
+      console.log("Removing FB SDK script...");
       script.remove();
     };
   }, [APP_ID]);
 
-  // Listen for Embedded Signup messages
+  // 2️⃣ Helper to parse query strings
+  function parseQueryString(queryString) {
+    const params = {};
+    queryString.split("&").forEach((pair) => {
+      const [key, value] = pair.split("=");
+      if (key) params[key] = decodeURIComponent(value || "");
+    });
+    console.log("Parsed query string:", params);
+    return params;
+  }
+
+  // 3️⃣ Listen for Embedded Signup messages
   useEffect(() => {
     const handleMessage = async (event) => {
-      if (!event.origin.endsWith("facebook.com")) return;
+      console.log("Received message event:", event);
+      // Loosen origin check for testing + Meta domains
+      if (!event.origin.includes("facebook.com") && !event.origin.includes("metaembeddedsignup")) {
+        console.log("Ignored message from origin:", event.origin);
+        return;
+      }
 
+      let data;
       try {
-        const data = JSON.parse(event.data);
+        data = JSON.parse(event.data);
+        console.log("Parsed JSON message:", data);
+      } catch {
+        console.log("Message is not JSON, parsing as query string...");
+        data = { data: parseQueryString(event.data), type: "WA_EMBEDDED_SIGNUP", event: "FINISH" };
+      }
 
-        if (data.type === "WA_EMBEDDED_SIGNUP") {
-          console.log("WA_EMBEDDED_SIGNUP event:", data);
+      if (data.type === "WA_EMBEDDED_SIGNUP") {
+        console.log("WA_EMBEDDED_SIGNUP event:", data);
 
-          if (data.event === "FINISH") {
-            const { code, waba_id, phone_number_id } = data.data;
-
-            if (!code) {
-              console.error("Embedded Signup code missing!");
-              return;
-            }
-
-            const sessionInfoPre = document.getElementById("sessionInfo");
-            if (sessionInfoPre) {
-              sessionInfoPre.textContent = `Signup Complete!\nWABA ID: ${waba_id}\nPhone Number ID: ${phone_number_id}\nCode: ${code}`;
-            }
-
-            // Exchange code on your backend
-            const res = await fetch(
-              `https://metaembeddedsignup-backend.onrender.com/api/embeddedSignup/exchange-token?code=${code}`
-            );
-            const result = await res.json();
-            if (result.success) setAccessToken(result.access_token);
-          }
-
-          if (data.event === "CANCEL") {
-            console.warn("Embedded Signup Abandoned:", data.data);
-          }
+        const { code, waba_id, phone_number_id } = data.data || {};
+        if (!code) {
+          console.error("Embedded Signup code missing!", data.data);
+          setSessionInfo("Error: Embedded Signup code missing!");
+          return;
         }
-      } catch  {
-        console.warn("Non-JSON message received:", event.data);
+
+        setSessionInfo(
+          `Signup Complete!\nWABA ID: ${waba_id}\nPhone Number ID: ${phone_number_id}\nCode: ${code}`
+        );
+
+        // Exchange code on your backend
+        try {
+          console.log("Exchanging code with backend...", code);
+          const res = await fetch(
+            `https://metaembeddedsignup-backend.onrender.com/api/embeddedSignup/exchange-token?code=${code}`
+          );
+          const result = await res.json();
+          console.log("Backend response:", result);
+          if (result.success) {
+            setAccessToken(result.access_token);
+            console.log("Access token set:", result.access_token);
+          } else {
+            console.error("Failed to get access token:", result);
+          }
+        } catch (err) {
+          console.error("Error exchanging code:", err);
+        }
       }
     };
 
     window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
+    return () => {
+      console.log("Removing message event listener...");
+      window.removeEventListener("message", handleMessage);
+    };
   }, []);
 
-  // Launch Embedded Signup
+  // 4️⃣ Launch Embedded Signup
   const launchWhatsAppSignup = () => {
+    console.log("Launching WhatsApp Embedded Signup...");
     if (!sdkLoaded || !window.FB) {
       alert("FB SDK not loaded yet!");
+      console.warn("FB SDK not loaded.");
       return;
     }
 
     window.FB.login(
       (response) => {
+        console.log("FB.login callback response:", response);
         if (response.authResponse?.code) {
-          console.log("Received code:", response.authResponse.code);
+          console.log("Received code from FB.login:", response.authResponse.code);
         } else {
           console.warn("Embedded Signup login response:", response);
         }
@@ -110,6 +145,7 @@ export default function WhatsAppEmbeddedSignup({
     );
   };
 
+  // 5️⃣ Render
   return (
     <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center" }}>
       <button
@@ -129,7 +165,7 @@ export default function WhatsAppEmbeddedSignup({
         Connect WhatsApp (Embedded Signup)
       </button>
 
-      <pre id="sessionInfo">Waiting for signup...</pre>
+      <pre id="sessionInfo">{sessionInfo}</pre>
 
       {accessToken && (
         <div>
