@@ -14,6 +14,8 @@ import Login from "./Pages/Login/Login";
 import EmbeddedSignup from "./components/EmbeddedSignup";
 import WhatsAppDashboard from "./components/WhatsAppDashboard";
 import WhatsAppDetail from "./components/DetailPage";
+import PrivacyPolicy from "./Pages/PrivacyPolicy";
+import TermsAndConditions from "./Pages/TermsAndConditions";
 
 
 
@@ -69,6 +71,8 @@ function App() {
         >
           <Route path="/EmbeddedSignup" element={<EmbeddedSignup />} />
           <Route path="/Dashboard" element={<WhatsAppDashboard/>} />
+          <Route path="/PrivacyPolicy" element={<PrivacyPolicy/>} />
+          <Route path="/TermsAndConditions" element={<TermsAndConditions/>} />
 
 
 
