@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../utils/axiosInstance";
-export default function WhatsAppEmbeddedSignup({
-  APP_ID = "1161878365754956",          // Replace with your App ID
-  CONFIG_ID = "1171586581686783",      // Replace with your Embedded Signup Config ID
-  FEATURE_TYPE = "",            // Optional: "", "only_waba_sharing", "whatsapp_business_app_onboarding"
-}) {
+export default function WhatsAppEmbeddedSignup() {
   const [accessToken, setAccessToken] = useState("");
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [sessionInfo, setSessionInfo] = useState("Waiting for signup...");
 
-  // 1️⃣ Load FB SDK dynamically
+  const APP_ID = import.meta.env.VITE_META_APP_ID;
+  const CONFIG_ID = import.meta.env.VITE_META_CONFIG_ID;
+
   useEffect(() => {
     console.log("Loading FB SDK...");
     if (window.FB) {
@@ -43,7 +41,6 @@ export default function WhatsAppEmbeddedSignup({
     };
   }, [APP_ID]);
 
-  // 2️⃣ Helper to parse query strings
   function parseQueryString(queryString) {
     const params = {};
     queryString.split("&").forEach((pair) => {
@@ -54,57 +51,50 @@ export default function WhatsAppEmbeddedSignup({
     return params;
   }
 
-  // 3️⃣ Listen for Embedded Signup messages
   useEffect(() => {
-  let storedIds = {}; // store IDs once
+    let storedIds = {};
+    const handleMessage = async (event) => {
+      let data;
 
-const handleMessage = async (event) => {
-  let data;
+      try {
+        data = JSON.parse(event.data);
+      } catch {
+        data = {
+          data: parseQueryString(event.data),
+          type: "WA_EMBEDDED_SIGNUP",
+          event: "FINISH",
+        };
+      }
 
-  try {
-    data = JSON.parse(event.data);
-  } catch {
-    data = { data: parseQueryString(event.data), type: "WA_EMBEDDED_SIGNUP", event: "FINISH" };
-  }
+      if (data.type === "WA_EMBEDDED_SIGNUP") {
+        storedIds = {
+          waba_id: data.data?.waba_id || storedIds.waba_id,
+          phone_number_id:
+            data.data?.phone_number_id || storedIds.phone_number_id,
+          business_id: data.data?.business_id || storedIds.business_id,
+          code: data.data?.code || data.code || storedIds.code,
+        };
 
-  if (data.type === "WA_EMBEDDED_SIGNUP") {
-    // Only set IDs if they exist
-    storedIds = {
-      waba_id: data.data?.waba_id || storedIds.waba_id,
-      phone_number_id: data.data?.phone_number_id || storedIds.phone_number_id,
-      business_id: data.data?.business_id || storedIds.business_id,
-      code: data.data?.code || data.code || storedIds.code,
+        setSessionInfo(
+          `Signup Complete!\nWABA ID: ${storedIds.waba_id}\nPhone Number ID: ${storedIds.phone_number_id}\nBusiness ID: ${storedIds.business_id}\nCode: ${storedIds.code}`
+        );
+
+        if (storedIds.code) {
+          const res = await axiosInstance.post(
+            "/api/embeddedSignup/exchange-token",
+            {
+              code: storedIds.code,
+              wabaId: storedIds.waba_id,
+              phoneNumberId: storedIds.phone_number_id,
+              businessId: storedIds.business_id,
+            }
+          );
+
+          const result = await res.json();
+          if (result.success) setAccessToken(result.access_token);
+        }
+      }
     };
-
-    setSessionInfo(
-      `Signup Complete!\nWABA ID: ${storedIds.waba_id}\nPhone Number ID: ${storedIds.phone_number_id}\nBusiness ID: ${storedIds.business_id}\nCode: ${storedIds.code}`
-    );
-
-    if (storedIds.code) {
-     
-const res = await axiosInstance.post("/api/embeddedSignup/exchange-token", {
-  code: storedIds.code,
-  wabaId: storedIds.waba_id,
-  phoneNumberId: storedIds.phone_number_id,
-  businessId: storedIds.business_id,
-});
-
-
-//       const res = await fetch("https://metaembeddedsignup-backend.onrender.com/api/embeddedSignup/exchange-token", {
-//   method: "POST",
-//   headers: { "Content-Type": "application/json" },
-//   body: JSON.stringify({
-//     code: storedIds.code,
-//     wabaId: storedIds.waba_id,
-//     phoneNumberId: storedIds.phone_number_id,
-//     businessId: storedIds.business_id,
-//   }),
-// });
-      const result = await res.json();
-      if (result.success) setAccessToken(result.access_token);
-    }
-  }
-};
 
     window.addEventListener("message", handleMessage);
     return () => {
@@ -113,7 +103,6 @@ const res = await axiosInstance.post("/api/embeddedSignup/exchange-token", {
     };
   }, []);
 
-  // 4️⃣ Launch Embedded Signup
   const launchWhatsAppSignup = () => {
     console.log("Launching WhatsApp Embedded Signup...");
     if (!sdkLoaded || !window.FB) {
@@ -126,7 +115,10 @@ const res = await axiosInstance.post("/api/embeddedSignup/exchange-token", {
       (response) => {
         console.log("FB.login callback response:", response);
         if (response.authResponse?.code) {
-          console.log("Received code from FB.login:", response.authResponse.code);
+          console.log(
+            "Received code from FB.login:",
+            response.authResponse.code
+          );
         } else {
           console.warn("Embedded Signup login response:", response);
         }
@@ -137,14 +129,13 @@ const res = await axiosInstance.post("/api/embeddedSignup/exchange-token", {
         override_default_response_type: true,
         extras: {
           setup: {},
-          featureType: FEATURE_TYPE,
+          featureType: "",
           sessionInfoVersion: "3",
         },
       }
     );
   };
 
-  // 5️⃣ Render
   return (
     <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center" }}>
       <button
@@ -161,14 +152,14 @@ const res = await axiosInstance.post("/api/embeddedSignup/exchange-token", {
           padding: "0 24px",
         }}
       >
-        Connect WhatsApp (Embedded Signup)
+        Connect WhatsApp (Meta Embedded Signup)
       </button>
 
       <pre id="sessionInfo">{sessionInfo}</pre>
 
       {accessToken && (
         <div>
-          <h3>✅ Access Token:</h3>
+          <h3>Access Token:</h3>
           <pre>{accessToken}</pre>
         </div>
       )}

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../utils/axiosInstance";
 import { toast ,ToastContainer} from "react-toastify";
 
-const WhatsAppDetail = ({ wabaId, token, onBack }) => {
+const WhatsAppDetail = ({ wabaId, token, onBack,account }) => {
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -96,6 +96,23 @@ const verifyOtp = async (phoneNumberId, code) => {
   // Optional: show raw response in console (debugging)
   console.log("Full Error:", errorData);
 } finally {
+    setActionLoading(false);
+  }
+};
+const subscribeWebhook = async (wabaId) => {
+  try {
+    setActionLoading(true);
+    const res = await api.post("/api/webhookSubscribe/subscribe", {
+      wabaId,
+      accessToken: token,
+    });
+    toast.success("Webhook subscribed successfully");
+    console.log("Webhook Subscribed:", res.data);
+  } catch (err) {
+    const errorMsg =
+      err.response?.data?.error?.message || "Failed to subscribe webhook";
+    toast.error(errorMsg);
+  } finally {
     setActionLoading(false);
   }
 };
@@ -271,6 +288,22 @@ const verifyOtp = async (phoneNumberId, code) => {
       </button>
     </div>
   )}
+</div>
+
+
+
+<div className="mt-8">
+  <h3 className="text-md font-semibold text-gray-700 mb-3">
+    Webhook Subscription
+  </h3>
+
+  <button
+    onClick={() => subscribeWebhook(wabaId)}
+    disabled={actionLoading}
+    className="px-4 py-2 bg-purple-600 text-white rounded-lg shadow hover:bg-purple-700 disabled:bg-gray-400"
+  >
+    {actionLoading ? "Subscribing..." : "Subscribe Webhook"}
+  </button>
 </div>
 
 </div>

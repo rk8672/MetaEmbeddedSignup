@@ -37,6 +37,7 @@ const WhatsAppDashboard = () => {
     const account = credentials.find((c) => c._id === selected);
     return (
       <WhatsAppDetail
+        account={account}
         wabaId={account.wabaId}
         token={account.accessToken}
         onBack={() => setSelected(null)}

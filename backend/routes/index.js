@@ -5,6 +5,7 @@ import webhookRouter from "../webhook/webhook.js";
 import detailsRoutes from "./detailsRoutes.js"; 
 import displayNameRoutes from "./displayNameRoutes.js"; 
 import mobileVerificationRoutes from "./mobileVerificationRoutes.js"; 
+import webhookSubscribe from "./webhookSubscribe.js"; 
 
 import embeddedSignup from "../webhook/embeddedSignup.js"; 
 
@@ -21,6 +22,8 @@ router.use("/whatsapp", WhatsAppCredentialRoute);
 
 // Webhook routes
 router.use("/webhook", webhookRouter);
+
+router.use("/webhookSubscribe", webhookSubscribe);
 
 router.use("/embeddedSignup", embeddedSignup);
 

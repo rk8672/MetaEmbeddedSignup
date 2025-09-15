@@ -4,8 +4,11 @@ import WhatsAppCredential from "../models/WhatsAppCredentialModel.js";
 import { protect } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
-const META_APP_ID = "1161878365754956";  
-const META_APP_SECRET = "038095ebcbb2ac866ae993a20b0e1b73"; 
+
+
+
+const META_APP_ID = process.env.META_APP_ID;
+const META_APP_SECRET = process.env.META_APP_SECRET;
 
 router.post("/exchange-token",protect, async (req, res) => {
   const { code, wabaId, phoneNumberId, businessId } = req.body;
