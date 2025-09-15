@@ -1,12 +1,13 @@
 import express from "express";
 import axios from "axios";
 import WhatsAppCredential from "../models/WhatsAppCredentialModel.js";
+import { protect } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 const META_APP_ID = "1161878365754956";  
 const META_APP_SECRET = "038095ebcbb2ac866ae993a20b0e1b73"; 
 
-router.post("/exchange-token", async (req, res) => {
+router.post("/exchange-token",protect, async (req, res) => {
   const { code, wabaId, phoneNumberId, businessId } = req.body;
   if (!code || !wabaId || !phoneNumberId) {
     return res.status(400).json({ success: false, error: "Missing required fields" });

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+import axiosInstance from "../utils/axiosInstance";
 export default function WhatsAppEmbeddedSignup({
   APP_ID = "1161878365754956",          // Replace with your App ID
   CONFIG_ID = "1171586581686783",      // Replace with your Embedded Signup Config ID
@@ -81,20 +81,25 @@ const handleMessage = async (event) => {
     );
 
     if (storedIds.code) {
-      // exchange code with backend
-      // const res = await fetch(
-      //   `https://metaembeddedsignup-backend.onrender.com/api/embeddedSignup/exchange-token?code=${storedIds.code}`
-      // );
-      const res = await fetch("https://metaembeddedsignup-backend.onrender.com/api/embeddedSignup/exchange-token", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    code: storedIds.code,
-    wabaId: storedIds.waba_id,
-    phoneNumberId: storedIds.phone_number_id,
-    businessId: storedIds.business_id,
-  }),
+     
+const res = await axiosInstance.post("/api/embeddedSignup/exchange-token", {
+  code: storedIds.code,
+  wabaId: storedIds.waba_id,
+  phoneNumberId: storedIds.phone_number_id,
+  businessId: storedIds.business_id,
 });
+
+
+//       const res = await fetch("https://metaembeddedsignup-backend.onrender.com/api/embeddedSignup/exchange-token", {
+//   method: "POST",
+//   headers: { "Content-Type": "application/json" },
+//   body: JSON.stringify({
+//     code: storedIds.code,
+//     wabaId: storedIds.waba_id,
+//     phoneNumberId: storedIds.phone_number_id,
+//     businessId: storedIds.business_id,
+//   }),
+// });
       const result = await res.json();
       if (result.success) setAccessToken(result.access_token);
     }
