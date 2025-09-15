@@ -7,28 +7,32 @@ const META_APP_ID = "1161878365754956";
 const META_APP_SECRET = "038095ebcbb2ac866ae993a20b0e1b73"; 
 
 router.get("/exchange-token", async (req, res) => {
-  const { waba_id, phone_number_id } = req.query;
-  if (!waba_id || !phone_number_id)
-    return res.status(400).json({ success: false, error: "Missing IDs" });
+  const { code } = req.query; // The code returned by Embedded Signup
+  if (!code) return res.status(400).json({ success: false, error: "Missing code" });
 
   try {
-    // Exchange for permanent access token
-    const response = await axios.get(
-      `https://graph.facebook.com/v20.0/${waba_id}`,
-      {
-        params: {
-          fields: "id,name",
-          access_token: `${META_APP_ID}|${META_APP_SECRET}`,
-        },
-      }
-    );
+    // Step 1: Exchange code for a business token
+    const tokenResponse = await axios.get("https://graph.facebook.com/v21.0/oauth/access_token", {
+      params: {
+        client_id: META_APP_ID,
+        client_secret: META_APP_SECRET,
+        code,
+      },
+    });
 
-    // For simplicity, just return a dummy token here
-    const access_token = `ACCESS_TOKEN_FOR_${waba_id}`;
-    res.json({ success: true, access_token });
+    const businessToken = tokenResponse.data.access_token;
+
+    // Step 2: Optional: Subscribe your app to webhooks for this WABA
+    // const subscribeResponse = await axios.post(
+    //   `https://graph.facebook.com/v23.0/${waba_id}/subscribed_apps`,
+    //   {},
+    //   { headers: { Authorization: `Bearer ${businessToken}` } }
+    // );
+
+    res.json({ success: true, access_token: businessToken });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, error: err.message });
+    console.error(err.response?.data || err.message);
+    res.status(500).json({ success: false, error: err.response?.data || err.message });
   }
 });
 

@@ -31,38 +31,40 @@ export default function WhatsAppEmbeddedSignup({
     })(document, "script", "facebook-jssdk");
 
     // Listen for embedded signup finish
-    const handleMessage = async (event) => {
-      if (
-        event.origin !== "https://www.facebook.com" &&
-        event.origin !== "https://web.facebook.com"
-      )
-        return;
+ const handleMessage = async (event) => {
+  if (
+    event.origin !== "https://www.facebook.com" &&
+    event.origin !== "https://web.facebook.com"
+  ) return;
 
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === "WA_EMBEDDED_SIGNUP" && data.event === "FINISH") {
-          const { phone_number_id, waba_id } = data.data;
-          console.log("Embedded Signup Data:", data.data);
+  try {
+    const data = JSON.parse(event.data);
 
-          // Display IDs
-          const sessionInfoPre = document.getElementById("sessionInfo");
-          if (sessionInfoPre) {
-            sessionInfoPre.textContent = `Signup Complete!\nWABA ID: ${waba_id}\nPhone Number ID: ${phone_number_id}`;
-          }
+    if (data.type === "WA_EMBEDDED_SIGNUP" && data.event === "FINISH") {
+      const { code, waba_id, phone_number_id } = data.data;
+      console.log("Embedded Signup Data:", data.data);
 
-          // Call backend to exchange token
-          const res = await fetch(
-            `https://metaembeddedsignup-backend.onrender.com/api/embeddedSignup/exchange-token?waba_id=${waba_id}&phone_number_id=${phone_number_id}`
-          );
-          const result = await res.json();
-          if (result.success) {
-            setAccessToken(result.access_token);
-          }
-        }
-      } catch  {
-        console.warn("Non-JSON message received:", event.data);
+      // Display IDs
+      const sessionInfoPre = document.getElementById("sessionInfo");
+      if (sessionInfoPre) {
+        sessionInfoPre.textContent = `Signup Complete!\nWABA ID: ${waba_id}\nPhone Number ID: ${phone_number_id}`;
       }
-    };
+
+      // Call backend to exchange code for business token
+      const res = await fetch(
+        `https://metaembeddedsignup-backend.onrender.com/api/embeddedSignup/exchange-token?code=${code}`
+      );
+      const result = await res.json();
+
+      if (result.success) {
+        setAccessToken(result.access_token);
+      }
+    }
+  } catch  {
+    console.warn("Non-JSON message received:", event.data);
+  }
+};
+
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
