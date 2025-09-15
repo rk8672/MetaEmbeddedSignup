@@ -3,7 +3,7 @@ import { useEffect } from "react";
 export default function WhatsAppEmbeddedSignup({
   // APP_ID = "1136675654949786",     calc
   // CONFIG_ID = "1351177489853567", calc
-   APP_ID = "1171586581686783", 
+   APP_ID = "1161878365754956", 
  CONFIG_ID = "1171586581686783", // RK TestAPP
   
 }) {
