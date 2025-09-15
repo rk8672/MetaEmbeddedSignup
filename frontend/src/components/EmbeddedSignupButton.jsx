@@ -73,38 +73,43 @@ export default function WhatsAppEmbeddedSignup({
         data = { data: parseQueryString(event.data), type: "WA_EMBEDDED_SIGNUP", event: "FINISH" };
       }
 
-      if (data.type === "WA_EMBEDDED_SIGNUP") {
-        console.log("WA_EMBEDDED_SIGNUP event:", data);
+     if (data.type === "WA_EMBEDDED_SIGNUP") {
+  console.log("WA_EMBEDDED_SIGNUP event:", data);
 
-        const { code, waba_id, phone_number_id } = data.data || {};
-        if (!code) {
-          console.error("Embedded Signup code missing!", data.data);
-          setSessionInfo("Error: Embedded Signup code missing!");
-          return;
-        }
+  // Extract everything safely
+  const code = data.data?.code || data.code;
+  const waba_id = data.data?.waba_id || data.waba_id;
+  const phone_number_id = data.data?.phone_number_id || data.phone_number_id;
+  const business_id = data.data?.business_id || data.business_id;
 
-        setSessionInfo(
-          `Signup Complete!\nWABA ID: ${waba_id}\nPhone Number ID: ${phone_number_id}\nCode: ${code}`
-        );
+  if (!code) {
+    console.error("Embedded Signup code missing!", data.data);
+    setSessionInfo("Error: Embedded Signup code missing!");
+    return;
+  }
 
-        // Exchange code on your backend
-        try {
-          console.log("Exchanging code with backend...", code);
-          const res = await fetch(
-            `https://metaembeddedsignup-backend.onrender.com/api/embeddedSignup/exchange-token?code=${code}`
-          );
-          const result = await res.json();
-          console.log("Backend response:", result);
-          if (result.success) {
-            setAccessToken(result.access_token);
-            console.log("Access token set:", result.access_token);
-          } else {
-            console.error("Failed to get access token:", result);
-          }
-        } catch (err) {
-          console.error("Error exchanging code:", err);
-        }
-      }
+  setSessionInfo(
+    `Signup Complete!\nWABA ID: ${waba_id}\nPhone Number ID: ${phone_number_id}\nBusiness ID: ${business_id}\nCode: ${code}`
+  );
+
+  // Exchange code on your backend
+  try {
+    console.log("Exchanging code with backend...", code);
+    const res = await fetch(
+      `https://metaembeddedsignup-backend.onrender.com/api/embeddedSignup/exchange-token?code=${code}`
+    );
+    const result = await res.json();
+    console.log("Backend response:", result);
+    if (result.success) {
+      setAccessToken(result.access_token);
+      console.log("Access token set:", result.access_token);
+    } else {
+      console.error("Failed to get access token:", result);
+    }
+  } catch (err) {
+    console.error("Error exchanging code:", err);
+  }
+}
     };
 
     window.addEventListener("message", handleMessage);
